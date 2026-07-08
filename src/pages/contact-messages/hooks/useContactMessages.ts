@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface ContactMessageFilters {
   search: string;
-  is_read: string; // "true", "false", ""
+  is_read: string;
 }
 
 export interface ContactMessageWithDetails extends ContactMessage {}
@@ -18,22 +18,18 @@ export interface PaginationType {
 
 interface UseContactMessagesReturn {
   messages: ContactMessageWithDetails[];
-  paginatedMessages: ContactMessageWithDetails[];
   filters: ContactMessageFilters;
-  setFilters: React.Dispatch<React.SetStateAction<ContactMessageFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedMessages: number[];
   setSelectedMessages: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof ContactMessageFilters, value: string) => void;
   resetFilters: () => void;
@@ -43,12 +39,13 @@ interface UseContactMessagesReturn {
 }
 
 const useContactMessages = (
-  initialFilters?: Partial<ContactMessageFilters>,
+  initialFilters?: Partial<ContactMessageFilters>
 ): UseContactMessagesReturn => {
   const [messages, setMessages] = useState<ContactMessageWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMessages, setSelectedMessages] = useState<number[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -58,7 +55,6 @@ const useContactMessages = (
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<ContactMessageFilters>({
     search: "",
@@ -106,14 +102,7 @@ const useContactMessages = (
         setLoading(false);
       }
     }
-  }, [
-    currentPage,
-    pageSize,
-    sortConfig.key,
-    sortConfig.direction,
-    filters.search,
-    filters.is_read,
-  ]);
+  }, [currentPage, pageSize, sortConfig.key, sortConfig.direction, filters]);
 
   useEffect(() => {
     fetchMessages();
@@ -132,7 +121,7 @@ const useContactMessages = (
       setFilters((prev) => ({ ...prev, [key]: value }));
       setCurrentPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -145,13 +134,13 @@ const useContactMessages = (
 
   const toggleMessageSelection = useCallback((id: number) => {
     setSelectedMessages((prev) =>
-      prev.includes(id) ? prev.filter((cid) => cid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((cid) => cid !== id) : [...prev, id]
     );
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedMessages((prev) =>
-      prev.length === messages?.length ? [] : messages?.map((m) => m.id),
+      prev.length === messages.length ? [] : messages.map((m) => m.id)
     );
   }, [messages]);
 
@@ -174,20 +163,18 @@ const useContactMessages = (
 
   return {
     messages,
-    paginatedMessages: messages,
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedMessages,
     setSelectedMessages,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,

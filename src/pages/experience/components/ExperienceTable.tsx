@@ -1,6 +1,6 @@
 // src/pages/experience/components/ExperienceTable.tsx
 import React from "react";
-import { ChevronUp, ChevronDown, Briefcase } from "lucide-react";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import type { ExperienceWithDetails } from "../hooks/useExperience";
 import { formatDate } from "@/utils/formatters";
 import ExperienceActionsDropdown from "./ExperienceActionsDropdown";
@@ -31,160 +31,130 @@ const ExperienceTable: React.FC<ExperienceTableProps> = ({
   const getSortIcon = (key: string) => {
     if (sortConfig.key !== key) return null;
     return sortConfig.direction === "asc" ? (
-      <ChevronUp className="icon-sm" />
+      <ChevronUp className="w-3 h-3" />
     ) : (
-      <ChevronDown className="icon-sm" />
+      <ChevronDown className="w-3 h-3" />
     );
   };
 
   const getCurrentBadge = (current: boolean) => {
     return current
-      ? "bg-[var(--accent-green-light)] text-[var(--accent-green)]"
-      : "bg-[var(--accent-gray-light)] text-[var(--text-secondary)]";
+      ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)]"
+      : "bg-[var(--status-inactive-bg)] text-[var(--status-inactive-text)]";
   };
 
+  if (experiences.length === 0) {
+    return (
+      <div className="text-center py-8 text-[var(--text-secondary)]">
+        No experience records found.
+      </div>
+    );
+  }
+
   return (
-    <div
-      className="overflow-x-auto rounded-md border compact-table"
-      style={{ borderColor: "var(--border-color)" }}
-    >
-      <table
-        className="min-w-full"
-        style={{ borderColor: "var(--border-color)" }}
-      >
-        <thead style={{ backgroundColor: "var(--card-secondary-bg)" }}>
+    <div className="overflow-x-auto rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)]">
+      <table className="w-full text-sm">
+        <thead className="bg-[var(--card-secondary-bg)] border-b border-[var(--border-color)]">
           <tr>
-            <th
-              scope="col"
-              className="w-10 px-2 py-2 text-left text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="py-3 px-4 w-8">
               <input
                 type="checkbox"
-                checked={
-                  experiences?.length > 0 &&
-                  selectedExperiences?.length === experiences?.length
-                }
+                checked={experiences.length > 0 && selectedExperiences.length === experiences.length}
                 onChange={onToggleSelectAll}
-                className="h-3 w-3 rounded border-gray-300"
-                style={{ color: "var(--accent-blue)" }}
+                className="rounded border-[var(--border-color)] cursor-pointer"
               />
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)]"
               onClick={() => onSort("company")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Company</span>
-                {getSortIcon("company")}
+              <div className="flex items-center gap-1">
+                Company {getSortIcon("company")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden sm:table-cell"
               onClick={() => onSort("position")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Position</span>
-                {getSortIcon("position")}
+              <div className="flex items-center gap-1">
+                Position {getSortIcon("position")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden md:table-cell"
               onClick={() => onSort("start_date")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Start Date</span>
-                {getSortIcon("start_date")}
+              <div className="flex items-center gap-1">
+                Start Date {getSortIcon("start_date")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden lg:table-cell"
               onClick={() => onSort("end_date")}
             >
-              <div className="flex items-center gap-xs">
-                <span>End Date</span>
-                {getSortIcon("end_date")}
+              <div className="flex items-center gap-1">
+                End Date {getSortIcon("end_date")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden sm:table-cell"
               onClick={() => onSort("current")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Current</span>
-                {getSortIcon("current")}
+              <div className="flex items-center gap-1">
+                Status {getSortIcon("current")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden xl:table-cell"
               onClick={() => onSort("order")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Order</span>
-                {getSortIcon("order")}
+              <div className="flex items-center gap-1">
+                Order {getSortIcon("order")}
               </div>
             </th>
-            <th
-              scope="col"
-              className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)]">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody style={{ backgroundColor: "var(--card-bg)" }}>
-          {experiences?.map((item) => (
+        <tbody>
+          {experiences.map((item) => (
             <tr
               key={item.id}
+              className="border-b border-[var(--border-color)] hover:bg-[var(--card-hover-bg)] transition-colors cursor-pointer"
               onClick={() => onView(item)}
-              className={`hover:bg-[var(--card-secondary-bg)] transition-colors cursor-pointer ${
-                selectedExperiences?.includes(item.id)
-                  ? "bg-[var(--accent-blue-dark)]"
-                  : ""
-              }`}
-              style={{ borderBottom: "1px solid var(--border-color)" }}
             >
-              <td className="px-2 py-2 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
-                  checked={selectedExperiences?.includes(item.id)}
+                  checked={selectedExperiences.includes(item.id)}
                   onChange={() => onToggleSelect(item.id)}
-                  className="h-3 w-3 rounded border-gray-300"
-                  style={{ color: "var(--accent-blue)" }}
+                  className="rounded border-[var(--border-color)] cursor-pointer"
                 />
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm font-medium" style={{ color: "var(--sidebar-text)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-primary)] font-medium">
                 {item.company}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] hidden sm:table-cell">
                 {item.position}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-sm hidden md:table-cell">
                 {formatDate(item.start_date)}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-sm hidden lg:table-cell">
                 {item.current ? "Present" : (item.end_date ? formatDate(item.end_date) : "-")}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4 hidden sm:table-cell">
                 <span
-                  className={`inline-flex items-center px-xs py-xs rounded-full text-xs font-medium ${getCurrentBadge(
-                    item.current,
-                  )}`}
+                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getCurrentBadge(item.current)}`}
                 >
                   {item.current ? "Current" : "Past"}
                 </span>
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-sm hidden xl:table-cell">
                 {item.order}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <ExperienceActionsDropdown
                   experience={item}
                   onView={onView}

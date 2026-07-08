@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.tsx
 import { AuthState, authStore } from "@/lib/authStore";
 import React, {
   createContext,
@@ -31,20 +32,11 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, setState] = useState<AuthState>(authStore.getState());
   const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsOffline] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   useEffect(() => {
     const init = async () => {
       setIsLoading(true);
-
-      // // Kunin ang status at isError mula sa verifyToken
-      // const { status, isError } = await authStore.verifyToken();
-
-      // if (status === "invalid") {
-      //   authStore.logout();
-      // } else if (isError) {
-      //   setIsOffline(true);
-      // }
       setState(authStore.getState());
       setIsLoading(false);
     };

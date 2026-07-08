@@ -16,6 +16,7 @@ interface BlogTableProps {
   onEdit: (blog: BlogWithDetails) => void;
   onDelete: (blog: BlogWithDetails) => void;
   onToggleFeatured?: (blog: BlogWithDetails) => void;
+  onToggleStatus?: (blog: BlogWithDetails) => void;
 }
 
 const BlogTable: React.FC<BlogTableProps> = ({
@@ -29,226 +30,157 @@ const BlogTable: React.FC<BlogTableProps> = ({
   onEdit,
   onDelete,
   onToggleFeatured,
+  onToggleStatus,
 }) => {
   const getSortIcon = (key: string) => {
     if (sortConfig.key !== key) return null;
     return sortConfig.direction === "asc" ? (
-      <ChevronUp className="icon-sm" />
+      <ChevronUp className="w-3 h-3" />
     ) : (
-      <ChevronDown className="icon-sm" />
+      <ChevronDown className="w-3 h-3" />
     );
   };
 
   const getStatusBadge = (status: string) => {
     return status === "published"
-      ? "bg-green-100 text-green-700"
-      : "bg-yellow-100 text-yellow-700";
+      ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)]"
+      : "bg-[var(--status-inactive-bg)] text-[var(--status-inactive-text)]";
   };
 
+  if (blogs.length === 0) {
+    return (
+      <div className="text-center py-8 text-[var(--text-secondary)]">
+        No blog posts found.
+      </div>
+    );
+  }
+
   return (
-    <div
-      className="overflow-x-auto rounded-md border compact-table"
-      style={{ borderColor: "var(--border-color)" }}
-    >
-      <table
-        className="min-w-full"
-        style={{ borderColor: "var(--border-color)" }}
-      >
-        <thead style={{ backgroundColor: "var(--card-secondary-bg)" }}>
+    <div className="overflow-x-auto rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)]">
+      <table className="w-full text-sm">
+        <thead className="bg-[var(--card-secondary-bg)] border-b border-[var(--border-color)]">
           <tr>
-            <th
-              scope="col"
-              className="w-10 px-2 py-2 text-left text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="py-3 px-4 w-8">
               <input
                 type="checkbox"
-                checked={
-                  blogs?.length > 0 && selectedBlogs?.length === blogs?.length
-                }
+                checked={blogs.length > 0 && selectedBlogs.length === blogs.length}
                 onChange={onToggleSelectAll}
-                className="h-3 w-3 rounded border-gray-300"
-                style={{ color: "var(--accent-blue)" }}
+                className="rounded border-[var(--border-color)] cursor-pointer"
               />
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSort("title");
-              }}
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)]"
+              onClick={() => onSort("title")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Title</span>
-                {getSortIcon("title")}
+              <div className="flex items-center gap-1">
+                Title {getSortIcon("title")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSort("slug");
-              }}
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden md:table-cell"
+              onClick={() => onSort("slug")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Slug</span>
-                {getSortIcon("slug")}
+              <div className="flex items-center gap-1">
+                Slug {getSortIcon("slug")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSort("author__name");
-              }}
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden lg:table-cell"
+              onClick={() => onSort("author__name")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Author</span>
-                {getSortIcon("author__name")}
+              <div className="flex items-center gap-1">
+                Author {getSortIcon("author__name")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSort("status");
-              }}
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)]"
+              onClick={() => onSort("status")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Status</span>
-                {getSortIcon("status")}
+              <div className="flex items-center gap-1">
+                Status {getSortIcon("status")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSort("featured");
-              }}
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden sm:table-cell"
+              onClick={() => onSort("featured")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Featured</span>
-                {getSortIcon("featured")}
+              <div className="flex items-center gap-1">
+                Featured {getSortIcon("featured")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSort("published_date");
-              }}
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden lg:table-cell"
+              onClick={() => onSort("published_date")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Published</span>
-                {getSortIcon("published_date")}
+              <div className="flex items-center gap-1">
+                Published {getSortIcon("published_date")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSort("views");
-              }}
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden xl:table-cell"
+              onClick={() => onSort("views")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Views</span>
-                {getSortIcon("views")}
+              <div className="flex items-center gap-1">
+                Views {getSortIcon("views")}
               </div>
             </th>
-            <th
-              scope="col"
-              className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)]">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody style={{ backgroundColor: "var(--card-bg)" }}>
-          {blogs?.map((blog) => (
+        <tbody>
+          {blogs.map((blog) => (
             <tr
               key={blog.id}
-              onClick={(e) => {
-                e.stopPropagation();
-                onView(blog);
-              }}
-              className={`hover:bg-[var(--card-secondary-bg)] transition-colors ${
-                selectedBlogs?.includes(blog.id)
-                  ? "bg-[var(--accent-blue-dark)]"
-                  : ""
-              }`}
-              style={{ borderBottom: "1px solid var(--border-color)" }}
+              className="border-b border-[var(--border-color)] hover:bg-[var(--card-hover-bg)] transition-colors cursor-pointer"
+              onClick={() => onView(blog)}
             >
-              <td className="px-2 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                  checked={selectedBlogs?.includes(blog.id)}
+                  checked={selectedBlogs.includes(blog.id)}
                   onChange={() => onToggleSelect(blog.id)}
-                  className="h-3 w-3 rounded border-gray-300"
-                  style={{ color: "var(--accent-blue)" }}
+                  className="rounded border-[var(--border-color)] cursor-pointer"
                 />
               </td>
-              <td
-                className="px-4 py-2 whitespace-nowrap text-sm font-medium"
-                style={{ color: "var(--sidebar-text)" }}
-              >
+              <td className="py-2.5 px-4 text-[var(--text-primary)] font-medium">
                 {blog.title}
               </td>
-              <td
-                className="px-4 py-2 whitespace-nowrap text-sm font-mono"
-                style={{ color: "var(--text-secondary)" }}
-              >
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] font-mono text-xs hidden md:table-cell">
                 {blog.slug}
               </td>
-              <td
-                className="px-4 py-2 whitespace-nowrap text-sm"
-                style={{ color: "var(--sidebar-text)" }}
-              >
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] hidden lg:table-cell">
                 {blog.author?.name || "-"}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4">
                 <span
-                  className={`inline-flex items-center px-xs py-xs rounded-full text-xs font-medium ${getStatusBadge(blog.status)}`}
+                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(blog.status)}`}
                 >
                   {blog.status_display}
                 </span>
               </td>
-              <td className="px-4 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4 hidden sm:table-cell">
                 {blog.featured ? (
-                  <Star className="w-4 h-4 text-yellow-500" />
+                  <Star className="w-4 h-4 text-[var(--secondary-color)]" />
                 ) : (
-                  <span className="text-[var(--text-secondary)]">—</span>
+                  <span className="text-[var(--text-tertiary)]">—</span>
                 )}
               </td>
-              <td
-                className="px-4 py-2 whitespace-nowrap text-sm"
-                style={{ color: "var(--text-secondary)" }}
-              >
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs hidden lg:table-cell">
                 {blog.published_date ? formatDate(blog.published_date) : "-"}
               </td>
-              <td
-                className="px-4 py-2 whitespace-nowrap text-sm text-right"
-                style={{ color: "var(--text-secondary)" }}
-              >
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-right hidden xl:table-cell">
                 {blog.views.toLocaleString()}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <BlogActionsDropdown
                   blog={blog}
                   onView={onView}
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onToggleFeatured={onToggleFeatured}
+                  onToggleStatus={onToggleStatus}
                 />
               </td>
             </tr>

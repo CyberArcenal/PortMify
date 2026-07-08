@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface ProjectFilters {
   search: string;
-  featured: string | undefined; // 'true', 'false', ''
-  project_type: number | null; // e.g., 1, 2, 3, 4, 5
+  featured: string;
+  project_type: number | null;
 }
 
 export interface ProjectWithDetails extends Project {}
@@ -19,22 +19,18 @@ export interface PaginationType {
 
 interface UseProjectsReturn {
   projects: ProjectWithDetails[];
-  paginatedProjects: ProjectWithDetails[];
   filters: ProjectFilters;
-  setFilters: React.Dispatch<React.SetStateAction<ProjectFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedProjects: number[];
   setSelectedProjects: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof ProjectFilters, value: string) => void;
   resetFilters: () => void;
@@ -48,13 +44,16 @@ const useProjects = (initialFilters?: Partial<ProjectFilters>): UseProjectsRetur
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProjects, setSelectedProjects] = useState<number[]>([]);
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" }>({
+  const [totalCount, setTotalCount] = useState(0);
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: "asc" | "desc";
+  }>({
     key: "created_at",
     direction: "desc",
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<ProjectFilters>({
     search: "",
@@ -118,10 +117,13 @@ const useProjects = (initialFilters?: Partial<ProjectFilters>): UseProjectsRetur
     page_size: pageSize,
   };
 
-  const handleFilterChange = useCallback((key: keyof ProjectFilters, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-    setCurrentPage(1);
-  }, []);
+  const handleFilterChange = useCallback(
+    (key: keyof ProjectFilters, value: string) => {
+      setFilters((prev) => ({ ...prev, [key]: value }));
+      setCurrentPage(1);
+    },
+    []
+  );
 
   const resetFilters = useCallback(() => {
     setFilters({
@@ -163,20 +165,18 @@ const useProjects = (initialFilters?: Partial<ProjectFilters>): UseProjectsRetur
 
   return {
     projects,
-    paginatedProjects: projects,
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedProjects,
     setSelectedProjects,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,

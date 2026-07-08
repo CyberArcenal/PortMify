@@ -24,8 +24,7 @@ type FormData = {
   github_url: string;
   linkedin_url: string;
   twitter_url: string;
-  resume: string;           // URL field
-  // We'll handle files separately, not in react-hook-form
+  resume: string;
 };
 
 const ProfileFormDialog: React.FC<ProfileFormDialogProps> = ({
@@ -71,7 +70,6 @@ const ProfileFormDialog: React.FC<ProfileFormDialogProps> = ({
         twitter_url: initialData.twitter_url || "",
         resume: initialData.resume_url || "",
       });
-      // Reset file selections when dialog opens with new data
       setSelectedProfileImage(null);
       setSelectedResumeFile(null);
     } else {
@@ -99,13 +97,11 @@ const ProfileFormDialog: React.FC<ProfileFormDialogProps> = ({
         resume: data.resume || undefined,
       };
 
-      // Handle resume file if present (will override URL)
       if (selectedResumeFile) {
         payload.resume_file = selectedResumeFile;
-        delete payload.resume; // prefer uploaded file
+        delete payload.resume;
       }
 
-      // Handle profile image if present
       if (selectedProfileImage) {
         payload.profile_image = selectedProfileImage;
       }
@@ -130,54 +126,54 @@ const ProfileFormDialog: React.FC<ProfileFormDialogProps> = ({
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Personal Information */}
         <div className="space-y-3">
-          <h4 className="font-medium text-[var(--sidebar-text)] border-b pb-1">
+          <h4 className="font-medium text-[var(--text-primary)] border-b border-[var(--border-color)] pb-1">
             Personal Information
           </h4>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "var(--sidebar-text)" }}>
+            <label className="block text-sm font-medium mb-1 text-[var(--text-secondary)]">
               Full Name *
             </label>
             <input
               {...register("name", { required: "Name is required" })}
-              className="compact-input w-full border rounded-md"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
               style={{
-                backgroundColor: "var(--card-bg)",
-                borderColor: "var(--border-color)",
-                color: "var(--sidebar-text)",
+                backgroundColor: "var(--input-bg)",
+                borderColor: "var(--input-border)",
+                color: "var(--input-text)",
               }}
             />
-            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
+            {errors.name && <p className="text-xs text-[var(--danger-color)] mt-1">{errors.name.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "var(--sidebar-text)" }}>
+            <label className="block text-sm font-medium mb-1 text-[var(--text-secondary)]">
               Title *
             </label>
             <input
               {...register("title", { required: "Title is required" })}
-              className="compact-input w-full border rounded-md"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
               style={{
-                backgroundColor: "var(--card-bg)",
-                borderColor: "var(--border-color)",
-                color: "var(--sidebar-text)",
+                backgroundColor: "var(--input-bg)",
+                borderColor: "var(--input-border)",
+                color: "var(--input-text)",
               }}
             />
-            {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>}
+            {errors.title && <p className="text-xs text-[var(--danger-color)] mt-1">{errors.title.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "var(--sidebar-text)" }}>
+            <label className="block text-sm font-medium mb-1 text-[var(--text-secondary)]">
               Bio
             </label>
             <textarea
               {...register("bio")}
               rows={4}
-              className="compact-input w-full border rounded-md"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
               style={{
-                backgroundColor: "var(--card-bg)",
-                borderColor: "var(--border-color)",
-                color: "var(--sidebar-text)",
+                backgroundColor: "var(--input-bg)",
+                borderColor: "var(--input-border)",
+                color: "var(--input-text)",
               }}
             />
           </div>
@@ -185,53 +181,53 @@ const ProfileFormDialog: React.FC<ProfileFormDialogProps> = ({
 
         {/* Contact Information */}
         <div className="space-y-3">
-          <h4 className="font-medium text-[var(--sidebar-text)] border-b pb-1">
+          <h4 className="font-medium text-[var(--text-primary)] border-b border-[var(--border-color)] pb-1">
             Contact Information
           </h4>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "var(--sidebar-text)" }}>
+            <label className="block text-sm font-medium mb-1 text-[var(--text-secondary)]">
               Email *
             </label>
             <input
               type="email"
               {...register("email", { required: "Email is required" })}
-              className="compact-input w-full border rounded-md"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
               style={{
-                backgroundColor: "var(--card-bg)",
-                borderColor: "var(--border-color)",
-                color: "var(--sidebar-text)",
+                backgroundColor: "var(--input-bg)",
+                borderColor: "var(--input-border)",
+                color: "var(--input-text)",
               }}
             />
-            {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
+            {errors.email && <p className="text-xs text-[var(--danger-color)] mt-1">{errors.email.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "var(--sidebar-text)" }}>
+            <label className="block text-sm font-medium mb-1 text-[var(--text-secondary)]">
               Phone
             </label>
             <input
               {...register("phone")}
-              className="compact-input w-full border rounded-md"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
               style={{
-                backgroundColor: "var(--card-bg)",
-                borderColor: "var(--border-color)",
-                color: "var(--sidebar-text)",
+                backgroundColor: "var(--input-bg)",
+                borderColor: "var(--input-border)",
+                color: "var(--input-text)",
               }}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "var(--sidebar-text)" }}>
+            <label className="block text-sm font-medium mb-1 text-[var(--text-secondary)]">
               Address
             </label>
             <input
               {...register("address")}
-              className="compact-input w-full border rounded-md"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
               style={{
-                backgroundColor: "var(--card-bg)",
-                borderColor: "var(--border-color)",
-                color: "var(--sidebar-text)",
+                backgroundColor: "var(--input-bg)",
+                borderColor: "var(--input-border)",
+                color: "var(--input-text)",
               }}
             />
           </div>
@@ -239,79 +235,88 @@ const ProfileFormDialog: React.FC<ProfileFormDialogProps> = ({
 
         {/* Social Links */}
         <div className="space-y-3">
-          <h4 className="font-medium text-[var(--sidebar-text)] border-b pb-1">
+          <h4 className="font-medium text-[var(--text-primary)] border-b border-[var(--border-color)] pb-1">
             Social Links
           </h4>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "var(--sidebar-text)" }}>
+            <label className="block text-sm font-medium mb-1 text-[var(--text-secondary)]">
               GitHub URL
             </label>
             <input
               {...register("github_url")}
-              className="compact-input w-full border rounded-md"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
               style={{
-                backgroundColor: "var(--card-bg)",
-                borderColor: "var(--border-color)",
-                color: "var(--sidebar-text)",
+                backgroundColor: "var(--input-bg)",
+                borderColor: "var(--input-border)",
+                color: "var(--input-text)",
               }}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "var(--sidebar-text)" }}>
+            <label className="block text-sm font-medium mb-1 text-[var(--text-secondary)]">
               LinkedIn URL
             </label>
             <input
               {...register("linkedin_url")}
-              className="compact-input w-full border rounded-md"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
               style={{
-                backgroundColor: "var(--card-bg)",
-                borderColor: "var(--border-color)",
-                color: "var(--sidebar-text)",
+                backgroundColor: "var(--input-bg)",
+                borderColor: "var(--input-border)",
+                color: "var(--input-text)",
               }}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "var(--sidebar-text)" }}>
+            <label className="block text-sm font-medium mb-1 text-[var(--text-secondary)]">
               Twitter URL
             </label>
             <input
               {...register("twitter_url")}
-              className="compact-input w-full border rounded-md"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
               style={{
-                backgroundColor: "var(--card-bg)",
-                borderColor: "var(--border-color)",
-                color: "var(--sidebar-text)",
+                backgroundColor: "var(--input-bg)",
+                borderColor: "var(--input-border)",
+                color: "var(--input-text)",
               }}
             />
           </div>
         </div>
 
-        {/* Resume & Profile Image with Drag & Drop */}
+        {/* Resume & Profile Image */}
         <div className="space-y-3">
-          <h4 className="font-medium text-[var(--sidebar-text)] border-b pb-1">
+          <h4 className="font-medium text-[var(--text-primary)] border-b border-[var(--border-color)] pb-1">
             Resume & Profile Image
           </h4>
 
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "var(--sidebar-text)" }}>
+            <label className="block text-sm font-medium mb-1 text-[var(--text-secondary)]">
               Resume URL (optional)
             </label>
             <input
               {...register("resume")}
               placeholder="https://example.com/resume.pdf"
-              className="compact-input w-full border rounded-md"
+              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
               style={{
-                backgroundColor: "var(--card-bg)",
-                borderColor: "var(--border-color)",
-                color: "var(--sidebar-text)",
+                backgroundColor: "var(--input-bg)",
+                borderColor: "var(--input-border)",
+                color: "var(--input-text)",
               }}
             />
             {initialData?.resume_url && !selectedResumeFile && (
-              <p className="text-xs text-[var(--text-secondary)] mt-1">
-                Current: <a href={initialData.resume_url} target="_blank" rel="noopener noreferrer" className="text-[var(--accent-blue)] hover:underline">{initialData.resume_url}</a>
+              <p className="text-xs text-[var(--text-secondary)] mt-1 flex items-center gap-1">
+                <span>Current:</span>
+                <a
+                  href={initialData.resume_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--primary-color)] hover:underline truncate max-w-[200px] inline-block"
+                  title={initialData.resume_url}
+                >
+                  {initialData.resume_url}
+                </a>
               </p>
             )}
           </div>

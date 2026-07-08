@@ -18,22 +18,18 @@ export interface PaginationType {
 
 interface UseEmailTemplatesReturn {
   templates: EmailTemplateWithDetails[];
-  paginatedTemplates: EmailTemplateWithDetails[];
   filters: EmailTemplateFilters;
-  setFilters: React.Dispatch<React.SetStateAction<EmailTemplateFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedTemplates: number[];
   setSelectedTemplates: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof EmailTemplateFilters, value: string) => void;
   resetFilters: () => void;
@@ -49,6 +45,7 @@ const useEmailTemplates = (
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTemplates, setSelectedTemplates] = useState<number[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -58,7 +55,6 @@ const useEmailTemplates = (
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<EmailTemplateFilters>({
     search: "",
@@ -106,14 +102,7 @@ const useEmailTemplates = (
         setLoading(false);
       }
     }
-  }, [
-    currentPage,
-    pageSize,
-    sortConfig.key,
-    sortConfig.direction,
-    filters.search,
-    filters.name,
-  ]);
+  }, [currentPage, pageSize, sortConfig.key, sortConfig.direction, filters]);
 
   useEffect(() => {
     fetchTemplates();
@@ -132,7 +121,7 @@ const useEmailTemplates = (
       setFilters((prev) => ({ ...prev, [key]: value }));
       setCurrentPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -145,13 +134,13 @@ const useEmailTemplates = (
 
   const toggleTemplateSelection = useCallback((id: number) => {
     setSelectedTemplates((prev) =>
-      prev.includes(id) ? prev.filter((tid) => tid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((tid) => tid !== id) : [...prev, id]
     );
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedTemplates((prev) =>
-      prev.length === templates?.length ? [] : templates?.map((t) => t.id),
+      prev.length === templates.length ? [] : templates.map((t) => t.id)
     );
   }, [templates]);
 
@@ -174,20 +163,18 @@ const useEmailTemplates = (
 
   return {
     templates,
-    paginatedTemplates: templates,
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedTemplates,
     setSelectedTemplates,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,

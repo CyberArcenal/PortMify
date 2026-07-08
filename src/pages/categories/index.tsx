@@ -1,29 +1,31 @@
 // src/pages/categories/index.tsx
-import React, { useState } from "react";
-import { Plus, Filter, RefreshCw, Package } from "lucide-react";
-import { Link } from "react-router-dom";
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import { Plus, RefreshCw, Eye, EyeOff, Filter, Tag } from "lucide-react";
 import Button from "../../components/UI/Button";
-import Pagination from "../../components/Shared/Pagination1";
 import { dialogs } from "../../utils/dialogs";
 import { showSuccess, showError } from "../../utils/notification";
+import { usePagination } from "../../contexts/PaginationContext";
 
 import useCategories, { type CategoryWithDetails } from "./hooks/useCategories";
-import FilterBar from "./components/FilterBar";
 import useCategoryForm from "./hooks/useCategoryForm";
 import { useCategoryView } from "./hooks/useCategoryView";
 import CategoryTable from "./components/CategoryTable";
 import CategoryViewDialog from "./components/CategoryViewDialog";
 import CategoryFormDialog from "./components/CategoryFormDialog";
+import FilterBar from "./components/FilterBar";
+import SummaryCards from "../../components/UI/SummaryCards";
+import BulkActionsBar from "../../components/UI/BulkActionsBar";
 import categoryAPI from "@/api/core/category";
 import { useBlogView } from "../blog/hooks/useBlogView";
 import BlogViewDialog from "../blog/components/BlogViewDialog";
 import BlogFormDialog from "../blog/components/BlogFormDialog";
 import useBlogForm from "../blog/hooks/useBlogForm";
 
+import { Tag as TagIcon, Star, FolderOpen } from "lucide-react";
+
 const CategoriesPage: React.FC = () => {
   const {
     categories,
-    paginatedCategories,
     filters,
     loading,
     error,
@@ -41,6 +43,7 @@ const CategoriesPage: React.FC = () => {
     toggleCategorySelection,
     toggleSelectAll,
     handleSort,
+    totalCount,
   } = useCategories();
 
   const formDialog = useCategoryForm();
@@ -48,13 +51,73 @@ const CategoriesPage: React.FC = () => {
   const blogFormDialog = useBlogForm();
   const blogViewDialog = useBlogView();
 
+  const [showStats, setShowStats] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
+  const { setPagination, clearPagination } = usePagination();
+
+  // ─── Pagination Integration ──────────────────────────────────────
+  const handlePageChange = useCallback(
+    (newPage: number) => setCurrentPage(newPage),
+    [setCurrentPage]
+  );
+
+  const handlePageSizeChange = useCallback(
+    (newSize: number) => {
+      setPageSize(newSize);
+      setCurrentPage(1);
+    },
+    [setPageSize, setCurrentPage]
+  );
+
+  const handlersRef = useRef({
+    onPageChange: handlePageChange,
+    onPageSizeChange: handlePageSizeChange,
+  });
+
+  useEffect(() => {
+    handlersRef.current = {
+      onPageChange: handlePageChange,
+      onPageSizeChange: handlePageSizeChange,
+    };
+  }, [handlePageChange, handlePageSizeChange]);
+
+  const prevPageRef = useRef(currentPage);
+  const prevTotalRef = useRef(totalCount);
+  const prevLimitRef = useRef(pageSize);
+
+  useEffect(() => {
+    const pageChanged = prevPageRef.current !== currentPage;
+    const totalChanged = prevTotalRef.current !== totalCount;
+    const limitChanged = prevLimitRef.current !== pageSize;
+
+    if (pageChanged || totalChanged || limitChanged) {
+      prevPageRef.current = currentPage;
+      prevTotalRef.current = totalCount;
+      prevLimitRef.current = pageSize;
+
+      setPagination({
+        currentPage,
+        totalItems: totalCount,
+        pageSize,
+        onPageChange: handlersRef.current.onPageChange,
+        onPageSizeChange: handlersRef.current.onPageSizeChange,
+        pageSizeOptions: [10, 25, 50, 100],
+        showPageSize: true,
+      });
+    }
+  }, [currentPage, totalCount, pageSize, setPagination]);
+
+  useEffect(() => {
+    return () => clearPagination();
+  }, [clearPagination]);
+
+  // ─── Handlers ────────────────────────────────────────────────────
   const handleToggleFeatured = async (category: CategoryWithDetails) => {
     try {
       await categoryAPI.patch(category.id, { featured: !category.featured });
       showSuccess(
-        category.featured ? "Featured removed" : "Category marked as featured",
+        category.featured ? "Featured removed" : "Category marked as featured"
       );
       reload();
     } catch (err: any) {
@@ -78,17 +141,15 @@ const CategoriesPage: React.FC = () => {
   };
 
   const handleBulkDelete = async () => {
-    if (selectedCategories?.length === 0) return;
+    if (selectedCategories.length === 0) return;
     const confirmed = await dialogs.confirm({
       title: "Bulk Delete",
-      message: `Delete ${selectedCategories?.length} categories?`,
+      message: `Delete ${selectedCategories.length} categor${selectedCategories.length > 1 ? "ies" : "y"}?`,
     });
     if (!confirmed) return;
     try {
-      await Promise.all(
-        selectedCategories?.map((id) => categoryAPI.delete(id)),
-      );
-      showSuccess(`${selectedCategories?.length} categories deleted.`);
+      await Promise.all(selectedCategories.map((id) => categoryAPI.delete(id)));
+      showSuccess(`${selectedCategories.length} categor${selectedCategories.length > 1 ? "ies" : "y"} deleted.`);
       setSelectedCategories([]);
       reload();
     } catch (err: any) {
@@ -96,62 +157,74 @@ const CategoriesPage: React.FC = () => {
     }
   };
 
-  const getDisplayRange = () => {
-    const start = (currentPage - 1) * pageSize + 1;
-    const end = Math.min(currentPage * pageSize, pagination.count);
-    return { start, end };
-  };
-  const { start, end } = getDisplayRange();
+  // ─── Summary Cards ──────────────────────────────────────────────
+  const summaryCards = [
+    {
+      title: "Total Categories",
+      value: pagination.count,
+      icon: TagIcon,
+      color: "blue",
+    },
+    {
+      title: "Featured",
+      value: categories?.filter((c) => c.featured).length || 0,
+      icon: Star,
+      color: "yellow",
+    },
+    {
+      title: "With Blogs",
+      value: categories?.filter((c) => c.blog_count > 0).length || 0,
+      icon: FolderOpen,
+      color: "green",
+    },
+    {
+      title: "Not Featured",
+      value: categories?.filter((c) => !c.featured).length || 0,
+      icon: Tag,
+      color: "gray",
+    },
+  ];
+
+  const hasFilters = Object.values(filters).some((v) => v);
 
   return (
-    <div
-      className="compact-card rounded-md shadow-md border"
-      style={{
-        backgroundColor: "var(--card-bg)",
-        borderColor: "var(--border-color)",
-      }}
-    >
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-sm mb-4">
+    <div className="space-y-4">
+      {/* ─── Header ─── */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2
-            className="text-base font-semibold"
-            style={{ color: "var(--sidebar-text)" }}
-          >
+          <h2 className="text-lg font-semibold text-[var(--sidebar-text)]">
             Categories
           </h2>
-          <p
-            className="mt-xs text-sm"
-            style={{ color: "var(--text-secondary)" }}
-          >
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
             Organize your blogs with categories
           </p>
         </div>
-        <div className="flex flex-wrap gap-xs w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2">
           <button
-            className="compact-button rounded-md flex items-center transition-colors ease-in-out hover:scale-105 hover:shadow-md disabled:opacity-50"
-            style={{
-              backgroundColor: "var(--card-secondary-bg)",
-              color: "var(--sidebar-text)",
-            }}
-            onClick={() => setShowFilters(!showFilters)}
+            onClick={() => setShowStats(!showStats)}
+            className="p-2 rounded-lg hover:bg-[var(--card-hover-bg)] transition-colors"
+            title={showStats ? "Hide summary" : "Show summary"}
           >
-            <Filter className="icon-sm mr-xs" />
-            Filters {showFilters ? "↑" : "↓"}
+            {showStats ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="p-2 rounded-lg hover:bg-[var(--card-hover-bg)] transition-colors"
+            title={showFilters ? "Hide filters" : "Show filters"}
+          >
+            <Filter className="w-4 h-4" />
           </button>
           <button
             onClick={reload}
             disabled={loading}
-            className="btn btn-secondary btn-sm rounded-md flex items-center transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-md disabled:opacity-50"
+            className="p-2 rounded-lg hover:bg-[var(--card-hover-bg)] transition-colors disabled:opacity-50"
+            title="Refresh"
           >
-            <RefreshCw
-              className={`icon-sm mr-1 ${loading ? "animate-spin" : ""}`}
-            />
-            {loading ? "Refreshing..." : "Refresh"}
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
           <Button
             onClick={formDialog.openAdd}
-            variant="success"
+            variant="primary"
             size="sm"
             icon={Plus}
             iconPosition="left"
@@ -161,32 +234,10 @@ const CategoriesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Summary Banner */}
-      {categories?.length > 0 && (
-        <div
-          className="mb-4 compact-card rounded-md border p-3 flex flex-wrap items-center justify-between gap-2"
-          style={{
-            backgroundColor: "var(--card-secondary-bg)",
-            borderColor: "var(--border-color)",
-          }}
-        >
-          <div className="flex items-center gap-2 text-xs">
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-[var(--accent-yellow)]"></span>
-              {categories?.filter((c) => c.featured).length} Featured
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-[var(--accent-gray)]"></span>
-              {categories?.filter((c) => !c.featured).length} Not Featured
-            </span>
-          </div>
-          <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
-            Total: {pagination.count} categories
-          </div>
-        </div>
-      )}
+      {/* ─── Summary Cards ─── */}
+      {showStats && <SummaryCards cards={summaryCards} columns={4} />}
 
-      {/* Filters */}
+      {/* ─── Filter Bar ─── */}
       {showFilters && (
         <FilterBar
           filters={filters}
@@ -195,185 +246,78 @@ const CategoriesPage: React.FC = () => {
         />
       )}
 
-      {/* Bulk Selection */}
-      {selectedCategories?.length > 0 && (
-        <div
-          className="mb-2 compact-card rounded-md border flex items-center justify-between p-2"
-          style={{
-            backgroundColor: "var(--accent-blue-dark)",
-            borderColor: "var(--accent-blue)",
-          }}
-        >
-          <span
-            className="font-medium text-sm"
-            style={{ color: "var(--accent-green)" }}
-          >
-            {selectedCategories?.length} category(s) selected
-          </span>
-          <div className="flex gap-xs">
+      {/* ─── Bulk Actions ─── */}
+      {selectedCategories.length > 0 && (
+        <BulkActionsBar
+          selectedCount={selectedCategories.length}
+          onClearSelection={() => setSelectedCategories([])}
+          onDelete={handleBulkDelete}
+          loading={loading}
+        />
+      )}
+
+      {/* ─── Table ─── */}
+      {loading && categories.length === 0 ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--primary-color)] border-t-transparent" />
+        </div>
+      ) : error ? (
+        <div className="text-center py-8 text-[var(--danger-color)]">
+          Error: {error}
+        </div>
+      ) : (
+        <CategoryTable
+          categories={categories}
+          selectedCategories={selectedCategories}
+          onToggleSelect={toggleCategorySelection}
+          onToggleSelectAll={toggleSelectAll}
+          onSort={handleSort}
+          sortConfig={sortConfig}
+          onView={(cat) => viewDialog.open(cat.id)}
+          onEdit={formDialog.openEdit}
+          onDelete={handleDelete}
+          onToggleFeatured={handleToggleFeatured}
+        />
+      )}
+
+      {/* ─── Empty State ─── */}
+      {!loading && !error && categories.length === 0 && (
+        <div className="text-center py-12">
+          <Tag className="w-12 h-12 mx-auto mb-3 text-[var(--text-tertiary)] opacity-50" />
+          <p className="text-base font-medium text-[var(--sidebar-text)]">
+            No categories found.
+          </p>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            {hasFilters
+              ? "Try adjusting your search or filters"
+              : "Start by creating your first category"}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2 justify-center">
+            {hasFilters && (
+              <button
+                className="px-4 py-2 rounded-lg text-sm bg-[var(--primary-color)] text-white hover:bg-[var(--primary-hover)] transition-colors"
+                onClick={resetFilters}
+              >
+                Clear Filters
+              </button>
+            )}
             <button
-              className="compact-button bg-[var(--accent-red)] hover:bg-[var(--accent-red-hover)] text-white rounded-md"
-              onClick={handleBulkDelete}
-              title="Delete selected"
+              className="px-4 py-2 rounded-lg text-sm bg-[var(--primary-color)] text-white hover:bg-[var(--primary-hover)] transition-colors"
+              onClick={formDialog.openAdd}
             >
-              Delete
+              Add First Category
             </button>
           </div>
         </div>
       )}
 
-      {/* Page Size & Info */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-sm mb-2">
-        <div className="flex items-center gap-sm">
-          <label className="text-sm" style={{ color: "var(--sidebar-text)" }}>
-            Show:
-          </label>
-          <select
-            value={pageSize}
-            onChange={(e) => setPageSize(Number(e.target.value))}
-            className="compact-input border rounded text-sm"
-            style={{
-              backgroundColor: "var(--card-bg)",
-              borderColor: "var(--border-color)",
-              color: "var(--sidebar-text)",
-            }}
-          >
-            {[10, 25, 50, 100].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-          <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            entries
-          </span>
-        </div>
-        <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          {pagination.count > 0 ? (
-            <>
-              Showing {start} to {end} of {pagination.count} entries
-            </>
-          ) : (
-            "No entries found"
-          )}
-        </div>
-      </div>
-
-      {/* Loading */}
-      {loading && (
-        <div className="flex justify-center py-4">
-          <div
-            className="animate-spin rounded-full h-6 w-6 border-b-2"
-            style={{ borderColor: "var(--accent-blue)" }}
-          ></div>
-        </div>
-      )}
-
-      {/* Error */}
-      {error && (
-        <div className="text-center py-4 text-red-500">Error: {error}</div>
-      )}
-
-      {/* Table */}
-      {!loading && !error && (
-        <>
-          <CategoryTable
-            categories={paginatedCategories}
-            selectedCategories={selectedCategories}
-            onToggleSelect={toggleCategorySelection}
-            onToggleSelectAll={toggleSelectAll}
-            onSort={handleSort}
-            sortConfig={sortConfig}
-            onView={(cat) => viewDialog.open(cat.id)}
-            onEdit={formDialog.openEdit}
-            onDelete={handleDelete}
-            onToggleFeatured={handleToggleFeatured}
-          />
-
-          {/* Empty State */}
-          {categories?.length === 0 && (
-            <div
-              className="text-center py-8 border rounded-md"
-              style={{ borderColor: "var(--border-color)" }}
-            >
-              <Package
-                className="icon-xl mx-auto mb-2"
-                style={{ color: "var(--text-secondary)" }}
-              />
-              <p className="text-base" style={{ color: "var(--sidebar-text)" }}>
-                No categories found.
-              </p>
-              <p
-                className="mt-xs text-sm"
-                style={{ color: "var(--text-tertiary)" }}
-              >
-                {Object.values(filters).some((v) => v)
-                  ? "Try adjusting your search or filters"
-                  : "Start by creating your first category"}
-              </p>
-              <div className="mt-2 gap-xs flex justify-center">
-                {Object.values(filters).some((v) => v) && (
-                  <button
-                    className="compact-button rounded-md"
-                    style={{
-                      backgroundColor: "var(--accent-blue)",
-                      color: "white",
-                    }}
-                    onClick={resetFilters}
-                  >
-                    Clear Filters
-                  </button>
-                )}
-                <Link
-                  to="#"
-                  className="compact-button rounded-md inline-block"
-                  style={{
-                    backgroundColor: "var(--accent-green)",
-                    color: "white",
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    formDialog.openAdd();
-                  }}
-                >
-                  Add First Category
-                </Link>
-              </div>
-            </div>
-          )}
-
-          {/* Pagination */}
-          {categories?.length > 0 && pagination.total_pages > 1 && (
-            <div className="mt-2">
-              <Pagination
-                currentPage={currentPage}
-                totalItems={pagination.count}
-                pageSize={pageSize}
-                onPageChange={setCurrentPage}
-                onPageSizeChange={setPageSize}
-                pageSizeOptions={[10, 25, 50, 100]}
-                showPageSize={false}
-              />
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Dialogs */}
+      {/* ─── Dialogs ─── */}
       <CategoryFormDialog
         isOpen={formDialog.isOpen}
         mode={formDialog.mode}
         categoryId={formDialog.categoryId}
         initialData={formDialog.initialData}
         onClose={formDialog.close}
-        onSuccess={reload}
-      />
-      <BlogFormDialog
-        isOpen={blogFormDialog.isOpen}
-        mode={blogFormDialog.mode}
-        blogId={blogFormDialog.blogId}
-        initialData={blogFormDialog.initialData}
-        onClose={blogFormDialog.close}
         onSuccess={reload}
       />
 
@@ -394,6 +338,7 @@ const CategoriesPage: React.FC = () => {
           blogViewDialog.open(blog.id);
         }}
       />
+
       <BlogViewDialog
         isOpen={blogViewDialog.isOpen}
         blog={blogViewDialog.blog}

@@ -1,6 +1,6 @@
 // src/pages/contact-messages/components/ContactMessageTable.tsx
 import React from "react";
-import { ChevronUp, ChevronDown, Mail, CheckCircle, XCircle } from "lucide-react";
+import { ChevronUp, ChevronDown, CheckCircle, XCircle } from "lucide-react";
 import type { ContactMessageWithDetails } from "../hooks/useContactMessages";
 import { formatDate } from "@/utils/formatters";
 import ContactMessageActionsDropdown from "./ContactMessageActionsDropdown";
@@ -31,16 +31,16 @@ const ContactMessageTable: React.FC<ContactMessageTableProps> = ({
   const getSortIcon = (key: string) => {
     if (sortConfig.key !== key) return null;
     return sortConfig.direction === "asc" ? (
-      <ChevronUp className="icon-sm" />
+      <ChevronUp className="w-3 h-3" />
     ) : (
-      <ChevronDown className="icon-sm" />
+      <ChevronDown className="w-3 h-3" />
     );
   };
 
   const getReadBadge = (isRead: boolean) => {
     return isRead
-      ? "bg-[var(--accent-green-light)] text-[var(--accent-green)]"
-      : "bg-[var(--accent-red-light)] text-[var(--accent-red)]";
+      ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)]"
+      : "bg-[var(--status-inactive-bg)] text-[var(--status-inactive-text)]";
   };
 
   const truncateSubject = (subject: string, maxLength = 30) => {
@@ -48,140 +48,110 @@ const ContactMessageTable: React.FC<ContactMessageTableProps> = ({
     return subject.substring(0, maxLength) + "...";
   };
 
+  if (messages.length === 0) {
+    return (
+      <div className="text-center py-8 text-[var(--text-secondary)]">
+        No messages found.
+      </div>
+    );
+  }
+
   return (
-    <div
-      className="overflow-x-auto rounded-md border compact-table"
-      style={{ borderColor: "var(--border-color)" }}
-    >
-      <table
-        className="min-w-full"
-        style={{ borderColor: "var(--border-color)" }}
-      >
-        <thead style={{ backgroundColor: "var(--card-secondary-bg)" }}>
+    <div className="overflow-x-auto rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)]">
+      <table className="w-full text-sm">
+        <thead className="bg-[var(--card-secondary-bg)] border-b border-[var(--border-color)]">
           <tr>
-            <th
-              scope="col"
-              className="w-10 px-2 py-2 text-left text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="py-3 px-4 w-8">
               <input
                 type="checkbox"
-                checked={
-                  messages?.length > 0 &&
-                  selectedMessages?.length === messages?.length
-                }
+                checked={messages.length > 0 && selectedMessages.length === messages.length}
                 onChange={onToggleSelectAll}
-                className="h-3 w-3 rounded border-gray-300"
-                style={{ color: "var(--accent-blue)" }}
+                className="rounded border-[var(--border-color)] cursor-pointer"
               />
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden sm:table-cell"
               onClick={() => onSort("id")}
             >
-              <div className="flex items-center gap-xs">
-                <span>ID</span>
-                {getSortIcon("id")}
+              <div className="flex items-center gap-1">
+                ID {getSortIcon("id")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)]"
               onClick={() => onSort("name")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Name</span>
-                {getSortIcon("name")}
+              <div className="flex items-center gap-1">
+                Name {getSortIcon("name")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden md:table-cell"
               onClick={() => onSort("email")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Email</span>
-                {getSortIcon("email")}
+              <div className="flex items-center gap-1">
+                Email {getSortIcon("email")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)]"
               onClick={() => onSort("subject")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Subject</span>
-                {getSortIcon("subject")}
+              <div className="flex items-center gap-1">
+                Subject {getSortIcon("subject")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden sm:table-cell"
               onClick={() => onSort("is_read")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Status</span>
-                {getSortIcon("is_read")}
+              <div className="flex items-center gap-1">
+                Status {getSortIcon("is_read")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden xl:table-cell"
               onClick={() => onSort("created_at")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Received</span>
-                {getSortIcon("created_at")}
+              <div className="flex items-center gap-1">
+                Received {getSortIcon("created_at")}
               </div>
             </th>
-            <th
-              scope="col"
-              className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)]">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody style={{ backgroundColor: "var(--card-bg)" }}>
-          {messages?.map((message) => (
+        <tbody>
+          {messages.map((message) => (
             <tr
               key={message.id}
+              className="border-b border-[var(--border-color)] hover:bg-[var(--card-hover-bg)] transition-colors cursor-pointer"
               onClick={() => onView(message)}
-              className={`hover:bg-[var(--card-secondary-bg)] transition-colors cursor-pointer ${
-                selectedMessages?.includes(message.id)
-                  ? "bg-[var(--accent-blue-dark)]"
-                  : ""
-              }`}
-              style={{ borderBottom: "1px solid var(--border-color)" }}
             >
-              <td className="px-2 py-2 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
-                  checked={selectedMessages?.includes(message.id)}
+                  checked={selectedMessages.includes(message.id)}
                   onChange={() => onToggleSelect(message.id)}
-                  className="h-3 w-3 rounded border-gray-300"
-                  style={{ color: "var(--accent-blue)" }}
+                  className="rounded border-[var(--border-color)] cursor-pointer"
                 />
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm font-mono" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] font-mono text-xs hidden sm:table-cell">
                 {message.id}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm font-medium" style={{ color: "var(--sidebar-text)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-primary)] font-medium">
                 {message.name}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-sm hidden md:table-cell">
                 {message.email}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] max-w-[150px] truncate">
                 {truncateSubject(message.subject)}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4 hidden sm:table-cell">
                 <span
-                  className={`inline-flex items-center px-xs py-xs rounded-full text-xs font-medium ${getReadBadge(
-                    message.is_read,
-                  )}`}
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getReadBadge(message.is_read)}`}
                 >
                   {message.is_read ? (
                     <>
@@ -196,10 +166,10 @@ const ContactMessageTable: React.FC<ContactMessageTableProps> = ({
                   )}
                 </span>
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs hidden xl:table-cell">
                 {formatDate(message.created_at)}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <ContactMessageActionsDropdown
                   message={message}
                   onView={onView}

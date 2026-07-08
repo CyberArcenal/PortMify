@@ -65,53 +65,48 @@ const EducationActionsDropdown: React.FC<EducationActionsDropdownProps> = ({
   };
 
   return (
-    <div className="education-actions-dropdown-container" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef}>
       <button
         ref={buttonRef}
         onClick={(e) => {
           e.stopPropagation();
           handleToggle();
         }}
-        className="p-1.5 rounded hover:bg-gray-100 transition-colors relative cursor-pointer"
+        className="p-1.5 rounded-lg hover:bg-[var(--card-hover-bg)] transition-colors"
         title="More Actions"
       >
-        <MoreVertical
-          className="w-4 h-4"
-          style={{ color: "var(--text-secondary)" }}
-        />
+        <MoreVertical className="w-4 h-4 text-[var(--text-secondary)]" />
       </button>
 
       {isOpen && (
         <div
-          className="fixed bg-white rounded-lg shadow-xl border border-gray-200 w-48 z-50 max-h-96 overflow-y-auto"
-          style={getDropdownPosition()}
+          className="fixed rounded-xl shadow-lg border w-48 z-50 overflow-hidden"
+          style={{
+            backgroundColor: "var(--card-bg)",
+            borderColor: "var(--border-color)",
+            boxShadow: "var(--shadow-lg)",
+            ...getDropdownPosition(),
+          }}
         >
           <div className="py-1">
-            {/* View Details */}
             <button
               onClick={() => handleAction(() => onView(education))}
-              className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
+              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] transition-colors"
             >
-              <Eye className="w-4 h-4 text-sky-500" />
+              <Eye className="w-4 h-4 text-[var(--accent-blue)]" />
               <span>View Details</span>
             </button>
-
-            {/* Edit */}
             <button
               onClick={() => handleAction(() => onEdit(education))}
-              className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
+              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] transition-colors"
             >
-              <Edit className="w-4 h-4 text-yellow-500" />
+              <Edit className="w-4 h-4 text-[var(--secondary-color)]" />
               <span>Edit</span>
             </button>
-
-            {/* Divider */}
-            <div className="border-t border-gray-200 my-1"></div>
-
-            {/* Delete */}
+            <hr className="border-[var(--border-color)] mx-3" />
             <button
               onClick={() => handleAction(() => onDelete(education))}
-              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[var(--danger-color)] hover:bg-[var(--danger-color)]/10 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
               <span>Delete</span>

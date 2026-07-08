@@ -54,7 +54,7 @@ const SubscriberActionsDropdown: React.FC<SubscriberActionsDropdownProps> = ({
   const getDropdownPosition = () => {
     if (!buttonRef.current) return {};
     const rect = buttonRef.current.getBoundingClientRect();
-    const dropdownHeight = 200;
+    const dropdownHeight = 260;
     const windowHeight = window.innerHeight;
 
     if (rect.bottom + dropdownHeight > windowHeight) {
@@ -70,82 +70,79 @@ const SubscriberActionsDropdown: React.FC<SubscriberActionsDropdownProps> = ({
   };
 
   return (
-    <div className="subscriber-actions-dropdown-container" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef}>
       <button
         ref={buttonRef}
         onClick={(e) => {
           e.stopPropagation();
           handleToggle();
         }}
-        className="p-1.5 rounded hover:bg-gray-100 transition-colors relative cursor-pointer"
+        className="p-1.5 rounded-lg hover:bg-[var(--card-hover-bg)] transition-colors"
         title="More Actions"
       >
-        <MoreVertical
-          className="w-4 h-4"
-          style={{ color: "var(--text-secondary)" }}
-        />
+        <MoreVertical className="w-4 h-4 text-[var(--text-secondary)]" />
       </button>
 
       {isOpen && (
         <div
-          className="fixed bg-white rounded-lg shadow-xl border border-gray-200 w-48 z-50 max-h-96 overflow-y-auto"
-          style={getDropdownPosition()}
+          className="fixed rounded-xl shadow-lg border w-48 z-50 overflow-hidden"
+          style={{
+            backgroundColor: "var(--card-bg)",
+            borderColor: "var(--border-color)",
+            boxShadow: "var(--shadow-lg)",
+            ...getDropdownPosition(),
+          }}
         >
           <div className="py-1">
-            {/* View Details */}
             <button
               onClick={() => handleAction(() => onView(subscriber))}
-              className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
+              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] transition-colors"
             >
-              <Eye className="w-4 h-4 text-sky-500" />
+              <Eye className="w-4 h-4 text-[var(--accent-blue)]" />
               <span>View Details</span>
             </button>
 
-            {/* Toggle Active */}
             {subscriber.is_active ? (
               <button
                 onClick={() => handleAction(() => onToggleActive?.(subscriber))}
-                className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] transition-colors"
               >
-                <XCircle className="w-4 h-4 text-orange-500" />
+                <XCircle className="w-4 h-4 text-[var(--warning-color)]" />
                 <span>Deactivate</span>
               </button>
             ) : (
               <button
                 onClick={() => handleAction(() => onToggleActive?.(subscriber))}
-                className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] transition-colors"
               >
-                <CheckCircle className="w-4 h-4 text-green-500" />
+                <CheckCircle className="w-4 h-4 text-[var(--success-color)]" />
                 <span>Activate</span>
               </button>
             )}
 
-            {/* Toggle Confirmed */}
             {subscriber.confirmed ? (
               <button
                 onClick={() => handleAction(() => onToggleConfirmed?.(subscriber))}
-                className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] transition-colors"
               >
-                <MailX className="w-4 h-4 text-orange-500" />
+                <MailX className="w-4 h-4 text-[var(--warning-color)]" />
                 <span>Mark Unconfirmed</span>
               </button>
             ) : (
               <button
                 onClick={() => handleAction(() => onToggleConfirmed?.(subscriber))}
-                className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] transition-colors"
               >
-                <MailCheck className="w-4 h-4 text-green-500" />
+                <MailCheck className="w-4 h-4 text-[var(--success-color)]" />
                 <span>Mark Confirmed</span>
               </button>
             )}
 
-            {/* Divider */}
-            <div className="border-t border-gray-200 my-1"></div>
+            <hr className="border-[var(--border-color)] mx-3" />
 
-            {/* Delete */}
             <button
               onClick={() => handleAction(() => onDelete(subscriber))}
-              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[var(--danger-color)] hover:bg-[var(--danger-color)]/10 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
               <span>Delete</span>

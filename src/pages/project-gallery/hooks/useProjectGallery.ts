@@ -17,22 +17,18 @@ export interface PaginationType {
 
 interface UseProjectGalleryReturn {
   images: ProjectGalleryImageWithDetails[];
-  paginatedImages: ProjectGalleryImageWithDetails[];
   filters: ProjectGalleryFilters;
-  setFilters: React.Dispatch<React.SetStateAction<ProjectGalleryFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedImages: number[];
   setSelectedImages: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof ProjectGalleryFilters, value: string) => void;
   resetFilters: () => void;
@@ -49,6 +45,7 @@ const useProjectGallery = (
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedImages, setSelectedImages] = useState<number[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -58,7 +55,6 @@ const useProjectGallery = (
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<ProjectGalleryFilters>({
     search: "",
@@ -78,6 +74,7 @@ const useProjectGallery = (
     if (!projectId) {
       setImages([]);
       setTotalCount(0);
+      setLoading(false);
       return;
     }
 
@@ -122,12 +119,13 @@ const useProjectGallery = (
     page_size: pageSize,
   };
 
-  // Local filtering and sorting
+  // Local filtering
   const filteredImages = images.filter((img) => {
     if (!filters.search) return true;
     return img.image_url?.toLowerCase().includes(filters.search.toLowerCase());
   });
 
+  // Local sorting
   const sortedImages = [...filteredImages].sort((a, b) => {
     if (sortConfig.key === "order") {
       return sortConfig.direction === "asc" ? a.order - b.order : b.order - a.order;
@@ -140,7 +138,7 @@ const useProjectGallery = (
       setFilters((prev) => ({ ...prev, [key]: value }));
       setCurrentPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -150,13 +148,13 @@ const useProjectGallery = (
 
   const toggleImageSelection = useCallback((id: number) => {
     setSelectedImages((prev) =>
-      prev.includes(id) ? prev.filter((iid) => iid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((iid) => iid !== id) : [...prev, id]
     );
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedImages((prev) =>
-      prev.length === sortedImages.length ? [] : sortedImages.map((img) => img.id),
+      prev.length === sortedImages.length ? [] : sortedImages.map((img) => img.id)
     );
   }, [sortedImages]);
 
@@ -179,20 +177,18 @@ const useProjectGallery = (
 
   return {
     images: sortedImages,
-    paginatedImages: sortedImages,
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedImages,
     setSelectedImages,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,

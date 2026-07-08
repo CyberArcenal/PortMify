@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 export interface SkillFilters {
   search: string;
   category: string;
-  featured: string; // "true", "false", ""
+  featured: string;
 }
 
 export interface SkillWithDetails extends Skill {}
@@ -19,22 +19,18 @@ export interface PaginationType {
 
 interface UseSkillsReturn {
   skills: SkillWithDetails[];
-  paginatedSkills: SkillWithDetails[];
   filters: SkillFilters;
-  setFilters: React.Dispatch<React.SetStateAction<SkillFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedSkills: number[];
   setSelectedSkills: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof SkillFilters, value: string) => void;
   resetFilters: () => void;
@@ -50,6 +46,7 @@ const useSkills = (
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSkills, setSelectedSkills] = useState<number[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -59,7 +56,6 @@ const useSkills = (
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<SkillFilters>({
     search: "",
@@ -90,8 +86,7 @@ const useSkills = (
       };
       if (filters.search) params.search = filters.search;
       if (filters.category) params.category = filters.category;
-      if (filters.featured !== "")
-        params.featured = filters.featured === "true";
+      if (filters.featured !== "") params.featured = filters.featured === "true";
 
       const response = await skillAPI.list(params);
       if (mountedRef.current) {
@@ -110,15 +105,7 @@ const useSkills = (
         setLoading(false);
       }
     }
-  }, [
-    currentPage,
-    pageSize,
-    sortConfig.key,
-    sortConfig.direction,
-    filters.search,
-    filters.category,
-    filters.featured,
-  ]);
+  }, [currentPage, pageSize, sortConfig.key, sortConfig.direction, filters]);
 
   useEffect(() => {
     fetchSkills();
@@ -137,7 +124,7 @@ const useSkills = (
       setFilters((prev) => ({ ...prev, [key]: value }));
       setCurrentPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -151,13 +138,13 @@ const useSkills = (
 
   const toggleSkillSelection = useCallback((id: number) => {
     setSelectedSkills((prev) =>
-      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
     );
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedSkills((prev) =>
-      prev.length === skills?.length ? [] : skills?.map((s) => s.id),
+      prev.length === skills.length ? [] : skills.map((s) => s.id)
     );
   }, [skills]);
 
@@ -180,20 +167,18 @@ const useSkills = (
 
   return {
     skills,
-    paginatedSkills: skills,
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedSkills,
     setSelectedSkills,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,

@@ -18,22 +18,18 @@ export interface PaginationType {
 
 interface UseEducationReturn {
   education: EducationWithDetails[];
-  paginatedEducation: EducationWithDetails[];
   filters: EducationFilters;
-  setFilters: React.Dispatch<React.SetStateAction<EducationFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedEducation: number[];
   setSelectedEducation: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof EducationFilters, value: string) => void;
   resetFilters: () => void;
@@ -42,13 +38,12 @@ interface UseEducationReturn {
   handleSort: (key: string) => void;
 }
 
-const useEducation = (
-  initialFilters?: Partial<EducationFilters>,
-): UseEducationReturn => {
+const useEducation = (initialFilters?: Partial<EducationFilters>): UseEducationReturn => {
   const [education, setEducation] = useState<EducationWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedEducation, setSelectedEducation] = useState<number[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -58,7 +53,6 @@ const useEducation = (
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<EducationFilters>({
     search: "",
@@ -106,14 +100,7 @@ const useEducation = (
         setLoading(false);
       }
     }
-  }, [
-    currentPage,
-    pageSize,
-    sortConfig.key,
-    sortConfig.direction,
-    filters.search,
-    filters.current,
-  ]);
+  }, [currentPage, pageSize, sortConfig.key, sortConfig.direction, filters]);
 
   useEffect(() => {
     fetchEducation();
@@ -132,7 +119,7 @@ const useEducation = (
       setFilters((prev) => ({ ...prev, [key]: value }));
       setCurrentPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -145,13 +132,13 @@ const useEducation = (
 
   const toggleEducationSelection = useCallback((id: number) => {
     setSelectedEducation((prev) =>
-      prev.includes(id) ? prev.filter((eid) => eid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((eid) => eid !== id) : [...prev, id]
     );
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedEducation((prev) =>
-      prev.length === education?.length ? [] : education?.map((e) => e.id),
+      prev.length === education.length ? [] : education.map((e) => e.id)
     );
   }, [education]);
 
@@ -174,20 +161,18 @@ const useEducation = (
 
   return {
     education,
-    paginatedEducation: education,
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedEducation,
     setSelectedEducation,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,

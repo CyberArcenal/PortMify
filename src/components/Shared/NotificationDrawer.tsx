@@ -1,3 +1,4 @@
+// src/components/Shared/NotificationDrawer.tsx
 import React, { useState, useEffect } from "react";
 import {
   X,
@@ -13,10 +14,9 @@ import { format } from "date-fns";
 import { dialogs } from "../../utils/dialogs";
 import notificationAPI, {
   type Notification as APINotification,
-} from "@/api/core/notification"; // <-- updated import
+} from "@/api/core/notification";
 import { useNotificationView } from "@/pages/notifications/hooks/useNotificationView";
 import NotificationViewDialog from "@/pages/notifications/components/NotificationViewDialog";
-
 
 // Local interface matching what the component expects (camelCase)
 interface Notification {
@@ -85,7 +85,6 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
         page,
         page_size: pageSize,
       });
-      // response is PaginatedResponse<APINotification> with results array
       const apiNotifs = response.results;
       const newItems = apiNotifs.map(toComponentNotification);
       setNotifications((prev) => (reset ? newItems : [...prev, ...newItems]));
@@ -99,12 +98,10 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
 
   const fetchUnreadCount = async () => {
     try {
-      // We don't have a dedicated unread count endpoint in the new API.
-      // We'll fetch the first page and count unread locally, or add a custom endpoint later.
-      // For now, we'll just set it to 0 to avoid breaking the UI.
-      // TODO: add a backend endpoint for unread count and use it here.
-      setUnreadCount(0);
-      onUnreadCountChange?.(0);
+      const response = await notificationAPI.list({ page: 1, page_size: 100 });
+      const unread = response.results.filter((n) => !n.is_read).length;
+      setUnreadCount(unread);
+      onUnreadCountChange?.(unread);
     } catch (err) {
       console.error("Failed to fetch unread count", err);
     }
@@ -127,12 +124,27 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
   };
 
   const handleMarkAllAsRead = async () => {
-    // The new API doesn't have a bulk mark-as-read endpoint.
-    // We'll show a message and optionally implement individual calls later.
-    dialogs.alert({
-      title: "Not Implemented",
-      message: "Mark all as read is not yet available.",
+    const confirmed = await dialogs.confirm({
+      title: "Mark All as Read",
+      message: "Are you sure you want to mark all notifications as read?",
     });
+    if (!confirmed) return;
+
+    try {
+      // Mark each unread notification individually
+      const unreadNotifs = notifications.filter((n) => !n.isRead);
+      for (const notif of unreadNotifs) {
+        await notificationAPI.markAsRead(notif.id);
+      }
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, isRead: true }))
+      );
+      setUnreadCount(0);
+      onUnreadCountChange?.(0);
+      dialogs.success("All notifications marked as read");
+    } catch (err: any) {
+      dialogs.alert({ title: "Error", message: err.message });
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -144,8 +156,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
 
     try {
       await notificationAPI.delete(id);
-      const wasUnread =
-        notifications.find((n) => n.id === id)?.isRead === false;
+      const wasUnread = notifications.find((n) => n.id === id)?.isRead === false;
       setNotifications((prev) => prev.filter((n) => n.id !== id));
       if (wasUnread) {
         const newUnreadCount = Math.max(0, unreadCount - 1);
@@ -177,32 +188,24 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
 
   const isLongMessage = (message: string) => message.length > 100;
 
-  const getTypeIcon = (type: Notification["type"]) => {
+  const getTypeColor = (type: Notification["type"]) => {
     switch (type) {
       case "success":
-        return (
-          <div className="w-2 h-2 rounded-full bg-[var(--accent-green)]" />
-        );
+        return "var(--success-color)";
       case "warning":
-        return (
-          <div className="w-2 h-2 rounded-full bg-[var(--accent-amber)]" />
-        );
+        return "var(--warning-color)";
       case "error":
-        return <div className="w-2 h-2 rounded-full bg-[var(--accent-red)]" />;
+        return "var(--danger-color)";
       case "info":
-        return <div className="w-2 h-2 rounded-full bg-[var(--accent-blue)]" />;
+        return "var(--accent-blue)";
       case "project":
       case "product":
       case "skill":
       case "message":
       case "portfolio":
-        return (
-          <div className="w-2 h-2 rounded-full bg-[var(--accent-purple)]" />
-        );
+        return "var(--primary-color)";
       default:
-        return (
-          <div className="w-2 h-2 rounded-full bg-[var(--text-tertiary)]" />
-        );
+        return "var(--text-tertiary)";
     }
   };
 
@@ -211,19 +214,27 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
 
       {/* Drawer */}
-      <div className="absolute right-0 top-0 h-full w-full max-w-md bg-[var(--card-bg)] border-l border-[var(--border-color)] shadow-xl transform transition-transform duration-300 ease-in-out windows-fade-in">
+      <div
+        className="absolute right-0 top-0 h-full w-full max-w-md bg-[var(--card-bg)] border-l border-[var(--border-color)] shadow-xl transform transition-transform duration-300 ease-in-out"
+        style={{
+          animation: "slideInRight 0.3s ease-out",
+        }}
+      >
         <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
+          {/* ─── Header ─── */}
+          <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)] bg-[var(--card-secondary-bg)]">
             <div className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-[var(--accent-blue)]" />
+              <Bell className="w-5 h-5 text-[var(--primary-color)]" />
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 Notifications
                 {unreadCount > 0 && (
-                  <span className="ml-2 text-sm font-normal text-[var(--accent-blue)]">
+                  <span className="ml-2 text-sm font-normal text-[var(--primary-color)]">
                     ({unreadCount} unread)
                   </span>
                 )}
@@ -231,18 +242,21 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-[var(--card-hover-bg)] rounded"
+              className="p-1.5 rounded-lg hover:bg-[var(--card-hover-bg)] transition-colors"
             >
-              <X className="w-5 h-5 text-[var(--text-tertiary)]" />
+              <X className="w-5 h-5 text-[var(--text-secondary)]" />
             </button>
           </div>
 
-          {/* Actions */}
+          {/* ─── Actions ─── */}
           {notifications.length > 0 && (
-            <div className="flex items-center justify-end gap-2 p-2 border-b border-[var(--border-color)]">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border-color)] bg-[var(--card-secondary-bg)]">
+              <span className="text-xs text-[var(--text-secondary)]">
+                {notifications.length} notification{notifications.length !== 1 ? "s" : ""}
+              </span>
               <button
                 onClick={handleMarkAllAsRead}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm text-[var(--accent-blue)] hover:bg-[var(--accent-blue-light)] rounded transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 text-sm text-[var(--primary-color)] hover:bg-[var(--primary-color)]/10 rounded-lg transition-colors"
                 disabled={unreadCount === 0}
               >
                 <CheckCheck className="w-4 h-4" />
@@ -251,15 +265,15 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
             </div>
           )}
 
-          {/* Notifications List */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {/* ─── Notifications List ─── */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-2">
             {loading && notifications.length === 0 ? (
               <div className="flex items-center justify-center h-32">
-                <Loader2 className="w-6 h-6 animate-spin text-[var(--accent-blue)]" />
+                <Loader2 className="w-6 h-6 animate-spin text-[var(--primary-color)]" />
               </div>
             ) : error ? (
               <div className="text-center p-6">
-                <AlertCircle className="w-10 h-10 mx-auto mb-2 text-[var(--accent-red)]" />
+                <AlertCircle className="w-10 h-10 mx-auto mb-2 text-[var(--danger-color)]" />
                 <p className="text-sm text-[var(--text-primary)]">{error}</p>
                 <button
                   onClick={() => {
@@ -267,15 +281,15 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                     setNotifications([]);
                     fetchNotifications(true);
                   }}
-                  className="mt-3 px-4 py-2 bg-[var(--accent-blue)] text-white rounded text-sm"
+                  className="mt-3 px-4 py-2 bg-[var(--primary-color)] text-white rounded-lg text-sm hover:bg-[var(--primary-hover)] transition-colors"
                 >
                   Retry
                 </button>
               </div>
             ) : notifications.length === 0 ? (
-              <div className="text-center p-6">
-                <Bell className="w-10 h-10 mx-auto mb-2 text-[var(--text-tertiary)]" />
-                <p className="text-sm text-[var(--text-primary)]">
+              <div className="text-center p-8">
+                <Bell className="w-12 h-12 mx-auto mb-3 text-[var(--text-tertiary)] opacity-50" />
+                <p className="text-sm font-medium text-[var(--text-primary)]">
                   No notifications yet
                 </p>
                 <p className="text-xs text-[var(--text-tertiary)] mt-1">
@@ -287,109 +301,120 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                 {notifications.map((notification) => {
                   const expanded = expandedIds.has(notification.id);
                   const longMessage = isLongMessage(notification.message);
+                  const typeColor = getTypeColor(notification.type);
 
                   return (
                     <div
                       key={notification.id}
-                      onClick={() => {
-                        if (!notification.isRead) {
-                          handleMarkAsRead(notification.id);
-                        }
-                        notificationView.open(notification.id);
-                      }}
-                      className={`group relative p-3 rounded-lg border cursor-pointer ${
+                      className={`group rounded-lg border transition-all duration-200 ${
                         notification.isRead
-                          ? "border-[var(--border-color)] bg-[var(--card-secondary-bg)]"
-                          : "border-[var(--accent-blue)] bg-[var(--accent-blue-light)]"
-                      } hover:shadow-md transition-shadow`}
+                          ? "border-[var(--border-color)] bg-[var(--card-bg)] hover:bg-[var(--card-hover-bg)]"
+                          : "border-[var(--primary-color)] bg-[var(--primary-light)] hover:bg-[var(--primary-light)]/70"
+                      }`}
                     >
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 mt-1">
-                          {getTypeIcon(notification.type)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className={`text-sm font-medium ${
-                              notification.isRead
-                                ? "text-[var(--text-secondary)]"
-                                : "text-[var(--text-primary)]"
-                            }`}
-                          >
-                            {notification.title}
-                          </p>
+                      <div
+                        className="p-3 cursor-pointer"
+                        onClick={() => {
+                          if (!notification.isRead) {
+                            handleMarkAsRead(notification.id);
+                          }
+                          notificationView.open(notification.id);
+                        }}
+                      >
+                        <div className="flex items-start gap-3">
+                          {/* Status dot */}
+                          <div className="flex-shrink-0 mt-1">
+                            <div
+                              className="w-2.5 h-2.5 rounded-full"
+                              style={{ backgroundColor: typeColor }}
+                            />
+                          </div>
 
-                          {/* Message with expand/collapse */}
-                          <div className="mt-1">
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
                             <p
-                              className={`text-xs text-[var(--text-tertiary)] ${
-                                !expanded ? "line-clamp-2" : ""
+                              className={`text-sm font-medium ${
+                                notification.isRead
+                                  ? "text-[var(--text-secondary)]"
+                                  : "text-[var(--text-primary)]"
                               }`}
                             >
-                              {notification.message}
+                              {notification.title}
                             </p>
-                            {longMessage && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleExpanded(notification.id);
-                                }}
-                                className="mt-1 text-xs text-[var(--accent-blue)] hover:underline flex items-center gap-1"
+
+                            {/* Message with expand/collapse */}
+                            <div className="mt-1">
+                              <p
+                                className={`text-xs text-[var(--text-secondary)] leading-relaxed ${
+                                  !expanded ? "line-clamp-2" : ""
+                                }`}
                               >
-                                {expanded ? (
-                                  <>
-                                    Show less <ChevronUp className="w-3 h-3" />
-                                  </>
-                                ) : (
-                                  <>
-                                    Read more{" "}
-                                    <ChevronDown className="w-3 h-3" />
-                                  </>
-                                )}
-                              </button>
+                                {notification.message}
+                              </p>
+                              {longMessage && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleExpanded(notification.id);
+                                  }}
+                                  className="mt-1 text-xs text-[var(--primary-color)] hover:underline flex items-center gap-1"
+                                >
+                                  {expanded ? (
+                                    <>
+                                      Show less <ChevronUp className="w-3 h-3" />
+                                    </>
+                                  ) : (
+                                    <>
+                                      Read more <ChevronDown className="w-3 h-3" />
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Timestamp */}
+                            <p className="text-xs text-[var(--text-tertiary)] mt-2">
+                              {format(
+                                new Date(notification.createdAt),
+                                "MMM dd, yyyy • hh:mm a"
+                              )}
+                            </p>
+
+                            {/* Metadata - only when expanded */}
+                            {notification.metadata && expanded && (
+                              <div className="mt-2 text-xs text-[var(--text-secondary)] bg-[var(--card-secondary-bg)] p-2 rounded border border-[var(--border-color)]">
+                                <pre className="whitespace-pre-wrap font-mono text-[10px]">
+                                  {JSON.stringify(notification.metadata, null, 2)}
+                                </pre>
+                              </div>
                             )}
                           </div>
 
-                          <p className="text-xs text-[var(--text-tertiary)] mt-2">
-                            {format(
-                              new Date(notification.createdAt),
-                              "MMM dd, yyyy • hh:mm a"
+                          {/* Action buttons */}
+                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {!notification.isRead && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMarkAsRead(notification.id);
+                                }}
+                                className="p-1.5 rounded-lg hover:bg-[var(--card-hover-bg)] transition-colors"
+                                title="Mark as read"
+                              >
+                                <CheckCheck className="w-4 h-4 text-[var(--success-color)]" />
+                              </button>
                             )}
-                          </p>
-
-                          {/* Metadata - only show when expanded */}
-                          {notification.metadata && expanded && (
-                            <div className="mt-2 text-xs text-[var(--text-tertiary)] bg-[var(--card-bg)] p-2 rounded border border-[var(--border-color)]">
-                              <pre className="whitespace-pre-wrap">
-                                {JSON.stringify(notification.metadata, null, 2)}
-                              </pre>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Action buttons */}
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {!notification.isRead && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleMarkAsRead(notification.id);
+                                handleDelete(notification.id);
                               }}
-                              className="p-1 hover:bg-[var(--card-hover-bg)] rounded"
-                              title="Mark as read"
+                              className="p-1.5 rounded-lg hover:bg-[var(--danger-color)]/10 transition-colors"
+                              title="Delete"
                             >
-                              <CheckCheck className="w-4 h-4 text-[var(--accent-blue)]" />
+                              <Trash2 className="w-4 h-4 text-[var(--danger-color)]" />
                             </button>
-                          )}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(notification.id);
-                            }}
-                            className="p-1 hover:bg-[var(--card-hover-bg)] rounded"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4 text-[var(--accent-red)]" />
-                          </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -401,12 +426,12 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                   <button
                     onClick={loadMore}
                     disabled={loading}
-                    className="w-full py-2 text-sm text-[var(--accent-blue)] hover:bg-[var(--accent-blue-light)] rounded transition-colors disabled:opacity-50"
+                    className="w-full py-2.5 text-sm text-[var(--primary-color)] hover:bg-[var(--primary-color)]/10 rounded-lg transition-colors disabled:opacity-50"
                   >
                     {loading ? (
                       <Loader2 className="w-4 h-4 animate-spin mx-auto" />
                     ) : (
-                      "Load more"
+                      "Load more notifications"
                     )}
                   </button>
                 )}
@@ -415,12 +440,28 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
           </div>
         </div>
       </div>
+
+      {/* View Dialog */}
       <NotificationViewDialog
         isOpen={notificationView.isOpen}
         notification={notificationView.notification}
         loading={notificationView.loading}
         onClose={notificationView.close}
       />
+
+      {/* ─── Keyframes ─── */}
+      <style>{`
+        @keyframes slideInRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 };

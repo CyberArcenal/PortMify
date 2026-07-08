@@ -6,7 +6,7 @@ export interface UserFilters {
   search: string;
   user_type: string;
   status: string;
-  is_active: string; // "true", "false", ""
+  is_active: string;
 }
 
 export interface UserWithDetails extends User {}
@@ -20,22 +20,18 @@ export interface PaginationType {
 
 interface UseUsersReturn {
   users: UserWithDetails[];
-  paginatedUsers: UserWithDetails[];
   filters: UserFilters;
-  setFilters: React.Dispatch<React.SetStateAction<UserFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedUsers: number[];
   setSelectedUsers: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof UserFilters, value: string) => void;
   resetFilters: () => void;
@@ -51,6 +47,7 @@ const useUsers = (
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -60,7 +57,6 @@ const useUsers = (
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<UserFilters>({
     search: "",
@@ -112,16 +108,7 @@ const useUsers = (
         setLoading(false);
       }
     }
-  }, [
-    currentPage,
-    pageSize,
-    sortConfig.key,
-    sortConfig.direction,
-    filters.search,
-    filters.user_type,
-    filters.status,
-    filters.is_active,
-  ]);
+  }, [currentPage, pageSize, sortConfig.key, sortConfig.direction, filters]);
 
   useEffect(() => {
     fetchUsers();
@@ -140,7 +127,7 @@ const useUsers = (
       setFilters((prev) => ({ ...prev, [key]: value }));
       setCurrentPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -155,13 +142,13 @@ const useUsers = (
 
   const toggleUserSelection = useCallback((id: number) => {
     setSelectedUsers((prev) =>
-      prev.includes(id) ? prev.filter((uid) => uid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((uid) => uid !== id) : [...prev, id]
     );
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedUsers((prev) =>
-      prev.length === users?.length ? [] : users?.map((u) => u.id),
+      prev.length === users.length ? [] : users.map((u) => u.id)
     );
   }, [users]);
 
@@ -184,20 +171,18 @@ const useUsers = (
 
   return {
     users,
-    paginatedUsers: users,
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedUsers,
     setSelectedUsers,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,

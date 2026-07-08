@@ -1,6 +1,6 @@
 // src/pages/subscribers/components/SubscriberTable.tsx
 import React from "react";
-import { ChevronUp, ChevronDown, CheckCircle, XCircle, Mail } from "lucide-react";
+import { ChevronUp, ChevronDown, CheckCircle, XCircle } from "lucide-react";
 import type { SubscriberWithDetails } from "../hooks/useSubscribers";
 import { formatDate } from "@/utils/formatters";
 import SubscriberActionsDropdown from "./SubscriberActionsDropdown";
@@ -33,132 +33,106 @@ const SubscriberTable: React.FC<SubscriberTableProps> = ({
   const getSortIcon = (key: string) => {
     if (sortConfig.key !== key) return null;
     return sortConfig.direction === "asc" ? (
-      <ChevronUp className="icon-sm" />
+      <ChevronUp className="w-3 h-3" />
     ) : (
-      <ChevronDown className="icon-sm" />
+      <ChevronDown className="w-3 h-3" />
     );
   };
 
   const getActiveBadge = (isActive: boolean) => {
     return isActive
-      ? "bg-[var(--accent-green-light)] text-[var(--accent-green)]"
-      : "bg-[var(--accent-red-light)] text-[var(--accent-red)]";
+      ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)]"
+      : "bg-[var(--status-inactive-bg)] text-[var(--status-inactive-text)]";
   };
 
   const getConfirmedBadge = (confirmed: boolean) => {
     return confirmed
-      ? "bg-[var(--accent-blue-light)] text-[var(--accent-blue)]"
-      : "bg-[var(--accent-gray-light)] text-[var(--text-secondary)]";
+      ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)]"
+      : "bg-[var(--status-inactive-bg)] text-[var(--status-inactive-text)]";
   };
 
+  if (subscribers.length === 0) {
+    return (
+      <div className="text-center py-8 text-[var(--text-secondary)]">
+        No subscribers found.
+      </div>
+    );
+  }
+
   return (
-    <div
-      className="overflow-x-auto rounded-md border compact-table"
-      style={{ borderColor: "var(--border-color)" }}
-    >
-      <table
-        className="min-w-full"
-        style={{ borderColor: "var(--border-color)" }}
-      >
-        <thead style={{ backgroundColor: "var(--card-secondary-bg)" }}>
+    <div className="overflow-x-auto rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)]">
+      <table className="w-full text-sm">
+        <thead className="bg-[var(--card-secondary-bg)] border-b border-[var(--border-color)]">
           <tr>
-            <th
-              scope="col"
-              className="w-10 px-2 py-2 text-left text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="py-3 px-4 w-8">
               <input
                 type="checkbox"
-                checked={
-                  subscribers?.length > 0 &&
-                  selectedSubscribers?.length === subscribers?.length
-                }
+                checked={subscribers.length > 0 && selectedSubscribers.length === subscribers.length}
                 onChange={onToggleSelectAll}
-                className="h-3 w-3 rounded border-gray-300"
-                style={{ color: "var(--accent-blue)" }}
+                className="rounded border-[var(--border-color)] cursor-pointer"
               />
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)]"
               onClick={() => onSort("email")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Email</span>
-                {getSortIcon("email")}
+              <div className="flex items-center gap-1">
+                Email {getSortIcon("email")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden md:table-cell"
               onClick={() => onSort("subscribed_at")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Subscribed</span>
-                {getSortIcon("subscribed_at")}
+              <div className="flex items-center gap-1">
+                Subscribed {getSortIcon("subscribed_at")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden sm:table-cell"
               onClick={() => onSort("is_active")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Status</span>
-                {getSortIcon("is_active")}
+              <div className="flex items-center gap-1">
+                Status {getSortIcon("is_active")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden lg:table-cell"
               onClick={() => onSort("confirmed")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Confirmed</span>
-                {getSortIcon("confirmed")}
+              <div className="flex items-center gap-1">
+                Confirmed {getSortIcon("confirmed")}
               </div>
             </th>
-            <th
-              scope="col"
-              className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)]">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody style={{ backgroundColor: "var(--card-bg)" }}>
-          {subscribers?.map((sub) => (
+        <tbody>
+          {subscribers.map((sub) => (
             <tr
               key={sub.id}
+              className="border-b border-[var(--border-color)] hover:bg-[var(--card-hover-bg)] transition-colors cursor-pointer"
               onClick={() => onView(sub)}
-              className={`hover:bg-[var(--card-secondary-bg)] transition-colors cursor-pointer ${
-                selectedSubscribers?.includes(sub.id)
-                  ? "bg-[var(--accent-blue-dark)]"
-                  : ""
-              }`}
-              style={{ borderBottom: "1px solid var(--border-color)" }}
             >
-              <td className="px-2 py-2 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
-                  checked={selectedSubscribers?.includes(sub.id)}
+                  checked={selectedSubscribers.includes(sub.id)}
                   onChange={() => onToggleSelect(sub.id)}
-                  className="h-3 w-3 rounded border-gray-300"
-                  style={{ color: "var(--accent-blue)" }}
+                  className="rounded border-[var(--border-color)] cursor-pointer"
                 />
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm font-medium" style={{ color: "var(--sidebar-text)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-primary)] font-medium">
                 {sub.email}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs hidden md:table-cell">
                 {formatDate(sub.subscribed_at)}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4 hidden sm:table-cell">
                 <span
-                  className={`inline-flex items-center px-xs py-xs rounded-full text-xs font-medium ${getActiveBadge(
-                    sub.is_active,
-                  )}`}
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getActiveBadge(sub.is_active)}`}
                 >
                   {sub.is_active ? (
                     <>
@@ -173,16 +147,14 @@ const SubscriberTable: React.FC<SubscriberTableProps> = ({
                   )}
                 </span>
               </td>
-              <td className="px-4 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4 hidden lg:table-cell">
                 <span
-                  className={`inline-flex items-center px-xs py-xs rounded-full text-xs font-medium ${getConfirmedBadge(
-                    sub.confirmed,
-                  )}`}
+                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getConfirmedBadge(sub.confirmed)}`}
                 >
                   {sub.confirmed ? "Confirmed" : "Unconfirmed"}
                 </span>
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <SubscriberActionsDropdown
                   subscriber={sub}
                   onView={onView}

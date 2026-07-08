@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface SubscriberFilters {
   search: string;
-  is_active: string; // "true", "false", ""
-  confirmed: string; // "true", "false", ""
+  is_active: string;
+  confirmed: string;
 }
 
 export interface SubscriberWithDetails extends Subscriber {}
@@ -19,22 +19,18 @@ export interface PaginationType {
 
 interface UseSubscribersReturn {
   subscribers: SubscriberWithDetails[];
-  paginatedSubscribers: SubscriberWithDetails[];
   filters: SubscriberFilters;
-  setFilters: React.Dispatch<React.SetStateAction<SubscriberFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedSubscribers: number[];
   setSelectedSubscribers: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof SubscriberFilters, value: string) => void;
   resetFilters: () => void;
@@ -50,6 +46,7 @@ const useSubscribers = (
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSubscribers, setSelectedSubscribers] = useState<number[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -59,7 +56,6 @@ const useSubscribers = (
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<SubscriberFilters>({
     search: "",
@@ -109,15 +105,7 @@ const useSubscribers = (
         setLoading(false);
       }
     }
-  }, [
-    currentPage,
-    pageSize,
-    sortConfig.key,
-    sortConfig.direction,
-    filters.search,
-    filters.is_active,
-    filters.confirmed,
-  ]);
+  }, [currentPage, pageSize, sortConfig.key, sortConfig.direction, filters]);
 
   useEffect(() => {
     fetchSubscribers();
@@ -136,7 +124,7 @@ const useSubscribers = (
       setFilters((prev) => ({ ...prev, [key]: value }));
       setCurrentPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -150,13 +138,13 @@ const useSubscribers = (
 
   const toggleSubscriberSelection = useCallback((id: number) => {
     setSelectedSubscribers((prev) =>
-      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
     );
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedSubscribers((prev) =>
-      prev.length === subscribers?.length ? [] : subscribers?.map((s) => s.id),
+      prev.length === subscribers.length ? [] : subscribers.map((s) => s.id)
     );
   }, [subscribers]);
 
@@ -179,20 +167,18 @@ const useSubscribers = (
 
   return {
     subscribers,
-    paginatedSubscribers: subscribers,
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedSubscribers,
     setSelectedSubscribers,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,

@@ -1,5 +1,6 @@
 // src/pages/subscribers/components/FilterBar.tsx
 import React from "react";
+import { X } from "lucide-react";
 import type { SubscriberFilters } from "../hooks/useSubscribers";
 
 interface FilterBarProps {
@@ -8,97 +9,92 @@ interface FilterBarProps {
   onReset: () => void;
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange, onReset }) => {
+const FilterBar: React.FC<FilterBarProps> = ({
+  filters,
+  onFilterChange,
+  onReset,
+}) => {
+  const hasFilters = Object.values(filters).some((v) => v);
+
   return (
-    <div
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-sm mb-4 compact-card rounded-md border p-3"
-      style={{
-        backgroundColor: "var(--card-secondary-bg)",
-        borderColor: "var(--border-color)",
-      }}
-    >
-      {/* Search */}
-      <div>
-        <label
-          className="block text-sm font-medium mb-xs"
-          style={{ color: "var(--sidebar-text)" }}
-        >
-          Search Email
-        </label>
-        <input
-          type="text"
-          placeholder="Search by email..."
-          value={filters.search}
-          onChange={(e) => onFilterChange("search", e.target.value)}
-          className="compact-input w-full border rounded-md"
-          style={{
-            backgroundColor: "var(--card-bg)",
-            borderColor: "var(--border-color)",
-            color: "var(--sidebar-text)",
-          }}
-        />
+    <div className="bg-[var(--card-secondary-bg)] rounded-xl p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)]">
+          <span>Filters</span>
+          {hasFilters && (
+            <span className="text-xs text-[var(--primary-color)] bg-[var(--primary-color)]/10 px-2 py-0.5 rounded-full">
+              Active
+            </span>
+          )}
+        </div>
+        {hasFilters && (
+          <button
+            onClick={onReset}
+            className="text-xs text-[var(--primary-color)] hover:underline flex items-center gap-1"
+          >
+            <X className="w-3 h-3" /> Clear all
+          </button>
+        )}
       </div>
 
-      {/* Active Status */}
-      <div>
-        <label
-          className="block text-sm font-medium mb-xs"
-          style={{ color: "var(--sidebar-text)" }}
-        >
-          Status
-        </label>
-        <select
-          value={filters.is_active}
-          onChange={(e) => onFilterChange("is_active", e.target.value)}
-          className="compact-input w-full border rounded-md"
-          style={{
-            backgroundColor: "var(--card-bg)",
-            borderColor: "var(--border-color)",
-            color: "var(--sidebar-text)",
-          }}
-        >
-          <option value="">All</option>
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
-        </select>
-      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+            Search Email
+          </label>
+          <input
+            type="text"
+            placeholder="Search by email..."
+            value={filters.search}
+            onChange={(e) => onFilterChange("search", e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
+            style={{
+              backgroundColor: "var(--input-bg)",
+              borderColor: "var(--input-border)",
+              color: "var(--input-text)",
+            }}
+          />
+        </div>
 
-      {/* Confirmed */}
-      <div>
-        <label
-          className="block text-sm font-medium mb-xs"
-          style={{ color: "var(--sidebar-text)" }}
-        >
-          Confirmation
-        </label>
-        <select
-          value={filters.confirmed}
-          onChange={(e) => onFilterChange("confirmed", e.target.value)}
-          className="compact-input w-full border rounded-md"
-          style={{
-            backgroundColor: "var(--card-bg)",
-            borderColor: "var(--border-color)",
-            color: "var(--sidebar-text)",
-          }}
-        >
-          <option value="">All</option>
-          <option value="true">Confirmed</option>
-          <option value="false">Unconfirmed</option>
-        </select>
-      </div>
+        <div>
+          <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+            Status
+          </label>
+          <select
+            value={filters.is_active}
+            onChange={(e) => onFilterChange("is_active", e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
+            style={{
+              backgroundColor: "var(--input-bg)",
+              borderColor: "var(--input-border)",
+              color: "var(--input-text)",
+            }}
+          >
+            <option value="">All</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+        </div>
 
-      {/* Reset button */}
-      <div className="flex items-end">
-        <button
-          onClick={onReset}
-          className="compact-button w-full rounded-md transition-colors"
-          style={{
-            backgroundColor: "var(--primary-color)",
-            color: "var(--sidebar-text)",
-          }}
-        >
-          Reset Filters
-        </button>
+        <div>
+          <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+            Confirmation
+          </label>
+          <select
+            value={filters.confirmed}
+            onChange={(e) => onFilterChange("confirmed", e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
+            style={{
+              backgroundColor: "var(--input-bg)",
+              borderColor: "var(--input-border)",
+              color: "var(--input-text)",
+            }}
+          >
+            <option value="">All</option>
+            <option value="true">Confirmed</option>
+            <option value="false">Unconfirmed</option>
+          </select>
+        </div>
       </div>
     </div>
   );

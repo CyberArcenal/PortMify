@@ -33,190 +33,172 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
   const getSortIcon = (key: string) => {
     if (sortConfig.key !== key) return null;
     return sortConfig.direction === "asc" ? (
-      <ChevronUp className="icon-sm" />
+      <ChevronUp className="w-3 h-3" />
     ) : (
-      <ChevronDown className="icon-sm" />
+      <ChevronDown className="w-3 h-3" />
     );
   };
 
   const getProjectTypeBadge = (type: string) => {
     const colors: Record<string, string> = {
-      web: "bg-blue-100 text-blue-700",
-      mobile: "bg-green-100 text-green-700",
-      design: "bg-purple-100 text-purple-700",
-      desktop: "bg-yellow-100 text-yellow-700",
-      other: "bg-gray-100 text-gray-700",
+      web: "bg-[var(--accent-blue-light)] text-[var(--accent-blue)]",
+      mobile: "bg-[var(--accent-green-light)] text-[var(--accent-green)]",
+      design: "bg-[var(--accent-purple-light)] text-[var(--accent-purple)]",
+      desktop: "bg-[var(--accent-orange-light)] text-[var(--accent-orange)]",
+      other: "bg-[var(--status-inactive-bg)] text-[var(--status-inactive-text)]",
     };
     const display: Record<string, string> = {
       web: "Web",
       mobile: "Mobile",
       design: "Design",
+      desktop: "Desktop",
       other: "Other",
     };
     return (
-      <span className={`inline-flex items-center px-xs py-xs rounded-full text-xs font-medium ${colors[type] || colors.other}`}>
+      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${colors[type] || colors.other}`}>
         {display[type] || type}
       </span>
     );
   };
 
+  if (projects.length === 0) {
+    return (
+      <div className="text-center py-8 text-[var(--text-secondary)]">
+        No projects found.
+      </div>
+    );
+  }
+
   return (
-    <div
-      className="overflow-x-auto rounded-md border compact-table"
-      style={{ borderColor: "var(--border-color)" }}
-    >
-      <table
-        className="min-w-full"
-        style={{ borderColor: "var(--border-color)" }}
-      >
-        <thead style={{ backgroundColor: "var(--card-secondary-bg)" }}>
+    <div className="overflow-x-auto rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)]">
+      <table className="w-full text-sm">
+        <thead className="bg-[var(--card-secondary-bg)] border-b border-[var(--border-color)]">
           <tr>
-            <th
-              scope="col"
-              className="w-10 px-2 py-2 text-left text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="py-3 px-4 w-8">
               <input
                 type="checkbox"
-                checked={
-                  projects.length > 0 &&
-                  selectedProjects.length === projects.length
-                }
+                checked={projects.length > 0 && selectedProjects.length === projects.length}
                 onChange={onToggleSelectAll}
-                className="h-3 w-3 rounded border-gray-300"
-                style={{ color: "var(--accent-blue)" }}
+                className="rounded border-[var(--border-color)] cursor-pointer"
               />
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSort("title");
-              }}
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)]"
+              onClick={() => onSort("title")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Title</span>
-                {getSortIcon("title")}
+              <div className="flex items-center gap-1">
+                Title {getSortIcon("title")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSort("project_type");
-              }}
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden md:table-cell"
+              onClick={() => onSort("project_type")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Type</span>
-                {getSortIcon("project_type")}
+              <div className="flex items-center gap-1">
+                Type {getSortIcon("project_type")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSort("featured");
-              }}
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden lg:table-cell"
+              onClick={() => onSort("demo_url")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Featured</span>
-                {getSortIcon("featured")}
+              <div className="flex items-center gap-1">
+                Links {getSortIcon("demo_url")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSort("created_at");
-              }}
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden sm:table-cell"
+              onClick={() => onSort("featured")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Created</span>
-                {getSortIcon("created_at")}
+              <div className="flex items-center gap-1">
+                Featured {getSortIcon("featured")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSort("views");
-              }}
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden xl:table-cell"
+              onClick={() => onSort("created_at")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Views</span>
-                {getSortIcon("views")}
+              <div className="flex items-center gap-1">
+                Created {getSortIcon("created_at")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden 2xl:table-cell"
+              onClick={() => onSort("views")}
             >
+              <div className="flex items-center gap-1">
+                Views {getSortIcon("views")}
+              </div>
+            </th>
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)]">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody style={{ backgroundColor: "var(--card-bg)" }}>
+        <tbody>
           {projects.map((project) => (
             <tr
               key={project.id}
-              onClick={(e) => {
-                e.stopPropagation();
-                onView(project);
-              }}
-              className={`hover:bg-[var(--card-secondary-bg)] transition-colors ${
-                selectedProjects.includes(project.id)
-                  ? "bg-[var(--accent-blue-dark)]"
-                  : ""
-              }`}
-              style={{ borderBottom: "1px solid var(--border-color)" }}
+              className="border-b border-[var(--border-color)] hover:bg-[var(--card-hover-bg)] transition-colors cursor-pointer"
+              onClick={() => onView(project)}
             >
-              <td className="px-2 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
                   checked={selectedProjects.includes(project.id)}
                   onChange={() => onToggleSelect(project.id)}
-                  className="h-3 w-3 rounded border-gray-300"
-                  style={{ color: "var(--accent-blue)" }}
+                  className="rounded border-[var(--border-color)] cursor-pointer"
                 />
               </td>
-              <td
-                className="px-4 py-2 whitespace-nowrap text-sm font-medium"
-                style={{ color: "var(--sidebar-text)" }}
-              >
+              <td className="py-2.5 px-4 text-[var(--text-primary)] font-medium">
                 {project.title}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4 hidden md:table-cell">
                 {getProjectTypeBadge(project.project_type?.name)}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4 hidden lg:table-cell">
+                <div className="flex items-center gap-2">
+                  {project.demo_url && (
+                    <a
+                      href={project.demo_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[var(--accent-blue)] hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Globe className="w-4 h-4" />
+                    </a>
+                  )}
+                  {project.source_code_url && (
+                    <a
+                      href={project.source_code_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[var(--text-secondary)] hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Github className="w-4 h-4" />
+                    </a>
+                  )}
+                  {!project.demo_url && !project.source_code_url && (
+                    <span className="text-[var(--text-tertiary)] text-xs">—</span>
+                  )}
+                </div>
+              </td>
+              <td className="py-2.5 px-4 hidden sm:table-cell">
                 {project.featured ? (
-                  <Star className="w-4 h-4 text-yellow-500" />
+                  <Star className="w-4 h-4 text-[var(--secondary-color)]" />
                 ) : (
-                  <span className="text-[var(--text-secondary)]">—</span>
+                  <span className="text-[var(--text-tertiary)]">—</span>
                 )}
               </td>
-              <td
-                className="px-4 py-2 whitespace-nowrap text-sm"
-                style={{ color: "var(--text-secondary)" }}
-              >
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs hidden xl:table-cell">
                 {formatDate(project.created_at)}
               </td>
-              <td
-                className="px-4 py-2 whitespace-nowrap text-sm text-right"
-                style={{ color: "var(--text-secondary)" }}
-              >
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-right hidden 2xl:table-cell">
                 {project.views.toLocaleString()}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <ProjectActionsDropdown
                   project={project}
                   onView={onView}

@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface TestimonialFilters {
   search: string;
-  featured: string; // "true", "false", ""
-  approved: string; // "true", "false", ""
+  featured: string;
+  approved: string;
 }
 
 export interface TestimonialWithDetails extends Testimonial {}
@@ -19,22 +19,18 @@ export interface PaginationType {
 
 interface UseTestimonialsReturn {
   testimonials: TestimonialWithDetails[];
-  paginatedTestimonials: TestimonialWithDetails[];
   filters: TestimonialFilters;
-  setFilters: React.Dispatch<React.SetStateAction<TestimonialFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedTestimonials: number[];
   setSelectedTestimonials: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof TestimonialFilters, value: string) => void;
   resetFilters: () => void;
@@ -50,6 +46,7 @@ const useTestimonials = (
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTestimonials, setSelectedTestimonials] = useState<number[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -59,7 +56,6 @@ const useTestimonials = (
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<TestimonialFilters>({
     search: "",
@@ -109,15 +105,7 @@ const useTestimonials = (
         setLoading(false);
       }
     }
-  }, [
-    currentPage,
-    pageSize,
-    sortConfig.key,
-    sortConfig.direction,
-    filters.search,
-    filters.featured,
-    filters.approved,
-  ]);
+  }, [currentPage, pageSize, sortConfig.key, sortConfig.direction, filters]);
 
   useEffect(() => {
     fetchTestimonials();
@@ -136,7 +124,7 @@ const useTestimonials = (
       setFilters((prev) => ({ ...prev, [key]: value }));
       setCurrentPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -150,13 +138,13 @@ const useTestimonials = (
 
   const toggleTestimonialSelection = useCallback((id: number) => {
     setSelectedTestimonials((prev) =>
-      prev.includes(id) ? prev.filter((tid) => tid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((tid) => tid !== id) : [...prev, id]
     );
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedTestimonials((prev) =>
-      prev.length === testimonials?.length ? [] : testimonials?.map((t) => t.id),
+      prev.length === testimonials.length ? [] : testimonials.map((t) => t.id)
     );
   }, [testimonials]);
 
@@ -179,20 +167,18 @@ const useTestimonials = (
 
   return {
     testimonials,
-    paginatedTestimonials: testimonials,
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedTestimonials,
     setSelectedTestimonials,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,

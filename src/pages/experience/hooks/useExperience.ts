@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface ExperienceFilters {
   search: string;
-  current: string; // "true", "false", ""
+  current: string;
 }
 
 export interface ExperienceWithDetails extends Experience {}
@@ -18,22 +18,18 @@ export interface PaginationType {
 
 interface UseExperienceReturn {
   experiences: ExperienceWithDetails[];
-  paginatedExperiences: ExperienceWithDetails[];
   filters: ExperienceFilters;
-  setFilters: React.Dispatch<React.SetStateAction<ExperienceFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedExperiences: number[];
   setSelectedExperiences: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof ExperienceFilters, value: string) => void;
   resetFilters: () => void;
@@ -49,6 +45,7 @@ const useExperience = (
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedExperiences, setSelectedExperiences] = useState<number[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -58,7 +55,6 @@ const useExperience = (
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<ExperienceFilters>({
     search: "",
@@ -106,14 +102,7 @@ const useExperience = (
         setLoading(false);
       }
     }
-  }, [
-    currentPage,
-    pageSize,
-    sortConfig.key,
-    sortConfig.direction,
-    filters.search,
-    filters.current,
-  ]);
+  }, [currentPage, pageSize, sortConfig.key, sortConfig.direction, filters]);
 
   useEffect(() => {
     fetchExperiences();
@@ -132,7 +121,7 @@ const useExperience = (
       setFilters((prev) => ({ ...prev, [key]: value }));
       setCurrentPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -145,13 +134,13 @@ const useExperience = (
 
   const toggleExperienceSelection = useCallback((id: number) => {
     setSelectedExperiences((prev) =>
-      prev.includes(id) ? prev.filter((eid) => eid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((eid) => eid !== id) : [...prev, id]
     );
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedExperiences((prev) =>
-      prev.length === experiences?.length ? [] : experiences?.map((e) => e.id),
+      prev.length === experiences.length ? [] : experiences.map((e) => e.id)
     );
   }, [experiences]);
 
@@ -174,20 +163,18 @@ const useExperience = (
 
   return {
     experiences,
-    paginatedExperiences: experiences,
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedExperiences,
     setSelectedExperiences,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,

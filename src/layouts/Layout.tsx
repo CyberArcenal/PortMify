@@ -1,52 +1,86 @@
 // src/layouts/Layout.tsx
-
 import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import Sidebar from "../components/Shared/SideBar";
-import TopBar from "../components/Shared/TopBar";
+import { PaginationProvider, usePagination } from "../contexts/PaginationContext";
+import Pagination from "../components/UI/Pagination";
+import Sidebar from "./Sidebar";
+import TopBar from "./Topbar";
 
-const Layout: React.FC = () => {
+// Internal component that uses pagination context
+const LayoutContent: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { pagination } = usePagination();
 
-  // After mounting, we can access the theme
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  // Prevent flash of unstyled content
-  if (!mounted) {
-    return null;
-  }
+  if (!mounted) return null;
 
   return (
-    <div className={`flex h-screen`}>
-      {/* Sidebar component */}
-      <Sidebar isOpen={sidebarOpen} />
+    <div className="flex h-screen flex-col bg-[var(--background-color)]">
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar with margin for breathing room */}
+        <div className="my-1">
+          <Sidebar isOpen={sidebarOpen} />
+        </div>
 
-      {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-opacity-50 z-20 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+        {/* Mobile backdrop */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-20 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
 
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* TopBar component */}
-        <TopBar toggleSidebar={toggleSidebar} />
+        {/* Main content area – card‑like container */}
+        <div className="flex-1 flex flex-col overflow-hidden m-1">
+          <div
+            className="flex-1 flex flex-col bg-[var(--card-bg)] rounded-2xl shadow-lg overflow-hidden border border-[var(--border-color)]"
+          >
+            {/* TopBar */}
+            <TopBar toggleSidebar={toggleSidebar} />
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-2 bg-background text-foreground">
-          <Outlet /> {/* Dito lalabas ang content ng bawat page */}
-        </main>
+            {/* Page content */}
+            <main className="flex-1 overflow-y-auto p-4 md:p-6">
+              <Outlet />
+            </main>
+
+            {/* Pagination bar – animated visibility */}
+            <div
+              className={`
+                px-4 py-2 border-t border-[var(--border-color)] bg-[var(--card-bg)]
+                overflow-hidden transition-all duration-300 ease-in-out
+                ${pagination.visible ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}
+              `}
+            >
+              <Pagination
+                variant="compact"
+                currentPage={pagination.currentPage}
+                totalItems={pagination.totalItems}
+                pageSize={pagination.pageSize}
+                onPageChange={pagination.onPageChange}
+                onPageSizeChange={pagination.onPageSizeChange}
+                pageSizeOptions={pagination.pageSizeOptions}
+                showPageSize={pagination.showPageSize}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+  );
+};
+
+// Main Layout component – wraps content with PaginationProvider
+const Layout: React.FC = () => {
+  return (
+    <PaginationProvider>
+      <LayoutContent />
+    </PaginationProvider>
   );
 };
 

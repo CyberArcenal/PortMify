@@ -18,22 +18,18 @@ export interface PaginationType {
 
 interface UseProjectTechStacksReturn {
   techStacks: ProjectTechStackWithDetails[];
-  paginatedTechStacks: ProjectTechStackWithDetails[];
   filters: ProjectTechStackFilters;
-  setFilters: React.Dispatch<React.SetStateAction<ProjectTechStackFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedItems: number[];
   setSelectedItems: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof ProjectTechStackFilters, value: string) => void;
   resetFilters: () => void;
@@ -50,6 +46,7 @@ const useProjectTechStacks = (
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -59,7 +56,6 @@ const useProjectTechStacks = (
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<ProjectTechStackFilters>({
     search: "",
@@ -80,6 +76,7 @@ const useProjectTechStacks = (
     if (!projectId) {
       setTechStacks([]);
       setTotalCount(0);
+      setLoading(false);
       return;
     }
 
@@ -124,7 +121,7 @@ const useProjectTechStacks = (
     page_size: pageSize,
   };
 
-  // Local filtering and sorting
+  // Local filtering
   const filteredItems = techStacks.filter((item) => {
     if (filters.search && !item.name.toLowerCase().includes(filters.search.toLowerCase())) {
       return false;
@@ -135,6 +132,7 @@ const useProjectTechStacks = (
     return true;
   });
 
+  // Local sorting
   const sortedItems = [...filteredItems].sort((a, b) => {
     if (sortConfig.key === "order") {
       return sortConfig.direction === "asc" ? a.order - b.order : b.order - a.order;
@@ -161,7 +159,7 @@ const useProjectTechStacks = (
       setFilters((prev) => ({ ...prev, [key]: value }));
       setCurrentPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -171,13 +169,13 @@ const useProjectTechStacks = (
 
   const toggleItemSelection = useCallback((id: number) => {
     setSelectedItems((prev) =>
-      prev.includes(id) ? prev.filter((iid) => iid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((iid) => iid !== id) : [...prev, id]
     );
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedItems((prev) =>
-      prev.length === sortedItems.length ? [] : sortedItems.map((item) => item.id),
+      prev.length === sortedItems.length ? [] : sortedItems.map((item) => item.id)
     );
   }, [sortedItems]);
 
@@ -200,20 +198,18 @@ const useProjectTechStacks = (
 
   return {
     techStacks: sortedItems,
-    paginatedTechStacks: sortedItems,
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedItems,
     setSelectedItems,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,

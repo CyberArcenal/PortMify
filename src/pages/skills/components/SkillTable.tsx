@@ -32,148 +32,124 @@ const SkillTable: React.FC<SkillTableProps> = ({
   const getSortIcon = (key: string) => {
     if (sortConfig.key !== key) return null;
     return sortConfig.direction === "asc" ? (
-      <ChevronUp className="icon-sm" />
+      <ChevronUp className="w-3 h-3" />
     ) : (
-      <ChevronDown className="icon-sm" />
+      <ChevronDown className="w-3 h-3" />
     );
   };
 
   const getFeaturedBadge = (featured: boolean) => {
     return featured
-      ? "bg-[var(--accent-yellow-light)] text-[var(--accent-yellow)]"
-      : "bg-[var(--accent-gray-light)] text-[var(--text-secondary)]";
+      ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)]"
+      : "bg-[var(--status-inactive-bg)] text-[var(--status-inactive-text)]";
   };
 
+  if (skills.length === 0) {
+    return (
+      <div className="text-center py-8 text-[var(--text-secondary)]">
+        No skills found.
+      </div>
+    );
+  }
+
   return (
-    <div
-      className="overflow-x-auto rounded-md border compact-table"
-      style={{ borderColor: "var(--border-color)" }}
-    >
-      <table
-        className="min-w-full"
-        style={{ borderColor: "var(--border-color)" }}
-      >
-        <thead style={{ backgroundColor: "var(--card-secondary-bg)" }}>
+    <div className="overflow-x-auto rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)]">
+      <table className="w-full text-sm">
+        <thead className="bg-[var(--card-secondary-bg)] border-b border-[var(--border-color)]">
           <tr>
-            <th
-              scope="col"
-              className="w-10 px-2 py-2 text-left text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="py-3 px-4 w-8">
               <input
                 type="checkbox"
-                checked={
-                  skills?.length > 0 &&
-                  selectedSkills?.length === skills?.length
-                }
+                checked={skills.length > 0 && selectedSkills.length === skills.length}
                 onChange={onToggleSelectAll}
-                className="h-3 w-3 rounded border-gray-300"
-                style={{ color: "var(--accent-blue)" }}
+                className="rounded border-[var(--border-color)] cursor-pointer"
               />
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)]"
               onClick={() => onSort("name")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Name</span>
-                {getSortIcon("name")}
+              <div className="flex items-center gap-1">
+                Name {getSortIcon("name")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden md:table-cell"
               onClick={() => onSort("category")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Category</span>
-                {getSortIcon("category")}
+              <div className="flex items-center gap-1">
+                Category {getSortIcon("category")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden lg:table-cell"
               onClick={() => onSort("proficiency")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Proficiency</span>
-                {getSortIcon("proficiency")}
+              <div className="flex items-center gap-1">
+                Proficiency {getSortIcon("proficiency")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden sm:table-cell"
               onClick={() => onSort("order")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Order</span>
-                {getSortIcon("order")}
+              <div className="flex items-center gap-1">
+                Order {getSortIcon("order")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden xl:table-cell"
               onClick={() => onSort("featured")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Featured</span>
-                {getSortIcon("featured")}
+              <div className="flex items-center gap-1">
+                Featured {getSortIcon("featured")}
               </div>
             </th>
-            <th
-              scope="col"
-              className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)]">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody style={{ backgroundColor: "var(--card-bg)" }}>
-          {skills?.map((skill) => (
+        <tbody>
+          {skills.map((skill) => (
             <tr
               key={skill.id}
+              className="border-b border-[var(--border-color)] hover:bg-[var(--card-hover-bg)] transition-colors cursor-pointer"
               onClick={() => onView(skill)}
-              className={`hover:bg-[var(--card-secondary-bg)] transition-colors cursor-pointer ${
-                selectedSkills?.includes(skill.id)
-                  ? "bg-[var(--accent-blue-dark)]"
-                  : ""
-              }`}
-              style={{ borderBottom: "1px solid var(--border-color)" }}
             >
-              <td className="px-2 py-2 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
-                  checked={selectedSkills?.includes(skill.id)}
+                  checked={selectedSkills.includes(skill.id)}
                   onChange={() => onToggleSelect(skill.id)}
-                  className="h-3 w-3 rounded border-gray-300"
-                  style={{ color: "var(--accent-blue)" }}
+                  className="rounded border-[var(--border-color)] cursor-pointer"
                 />
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm font-medium" style={{ color: "var(--sidebar-text)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-primary)] font-medium">
                 {skill.name}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] hidden md:table-cell">
                 {skill.category_display || skill.category}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
-                <div className="flex items-center gap-1">
-                  <span>{skill.proficiency}%</span>
-                  <div className="w-16 h-2 bg-gray-200 rounded-full">
+              <td className="py-2.5 px-4 hidden lg:table-cell">
+                <div className="flex items-center gap-2">
+                  <span className="text-[var(--text-secondary)] text-xs font-medium w-10">
+                    {skill.proficiency}%
+                  </span>
+                  <div className="w-20 h-1.5 bg-[var(--card-secondary-bg)] rounded-full overflow-hidden">
                     <div
-                      className="h-2 rounded-full bg-[var(--accent-blue)]"
+                      className="h-full rounded-full bg-[var(--primary-color)] transition-all"
                       style={{ width: `${skill.proficiency}%` }}
-                    ></div>
+                    />
                   </div>
                 </div>
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs hidden sm:table-cell">
                 {skill.order}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4 hidden xl:table-cell">
                 <span
-                  className={`inline-flex items-center px-xs py-xs rounded-full text-xs font-medium ${getFeaturedBadge(skill.featured)}`}
+                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getFeaturedBadge(skill.featured)}`}
                 >
                   {skill.featured ? (
                     <>
@@ -185,7 +161,7 @@ const SkillTable: React.FC<SkillTableProps> = ({
                   )}
                 </span>
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <SkillActionsDropdown
                   skill={skill}
                   onView={onView}

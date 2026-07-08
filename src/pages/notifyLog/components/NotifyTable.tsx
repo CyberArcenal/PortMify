@@ -1,4 +1,5 @@
-import React from 'react';
+// src/pages/notifyLog/components/NotifyTable.tsx
+import React from "react";
 import {
   Eye,
   RefreshCw,
@@ -10,9 +11,9 @@ import {
   RotateCw,
   Mail,
   Loader2,
-} from 'lucide-react';
-import { formatDate } from '../../../utils/formatters';
-import type { NotifyLog } from '@/api/core/notifyLog';
+} from "lucide-react";
+import { formatDate } from "../../../utils/formatters";
+import type { NotifyLog } from "@/api/core/notifyLog";
 
 interface NotificationTableProps {
   logs: NotifyLog[];
@@ -34,103 +35,121 @@ export const NotificationTable: React.FC<NotificationTableProps> = ({
   sendingIds = new Set(),
 }) => {
   const getStatusBadge = (status: string) => {
-    const baseClasses = 'px-2 py-1 text-xs font-medium rounded-full inline-flex items-center gap-1';
+    const baseClasses = "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium gap-1";
     switch (status) {
-      case 'sent':
-        return `${baseClasses} bg-green-500/20 text-green-400 border border-green-500/30`;
-      case 'queued':
-        return `${baseClasses} bg-yellow-500/20 text-yellow-400 border border-yellow-500/30`;
-      case 'failed':
-        return `${baseClasses} bg-red-500/20 text-red-400 border border-red-500/30`;
-      case 'resend':
-        return `${baseClasses} bg-blue-500/20 text-blue-400 border border-blue-500/30`;
+      case "sent":
+        return `${baseClasses} bg-[var(--status-success-bg)] text-[var(--status-success-text)]`;
+      case "queued":
+        return `${baseClasses} bg-[var(--status-inactive-bg)] text-[var(--status-inactive-text)]`;
+      case "failed":
+        return `${baseClasses} bg-[var(--danger-color)]/20 text-[var(--danger-color)]`;
+      case "resend":
+        return `${baseClasses} bg-[var(--status-success-bg)] text-[var(--status-success-text)]`;
       default:
-        return `${baseClasses} bg-gray-500/20 text-gray-400 border border-gray-500/30`;
+        return `${baseClasses} bg-[var(--status-inactive-bg)] text-[var(--status-inactive-text)]`;
     }
   };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary-color)]"></div>
+      <div className="flex justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--primary-color)] border-t-transparent" />
       </div>
     );
   }
 
   if (logs?.length === 0) {
     return (
-      <div className="text-center py-16 bg-[var(--card-bg)] rounded-xl border border-[var(--border-color)]/20">
-        <Mail className="w-16 h-16 mx-auto text-[var(--text-tertiary)] mb-4" />
-        <h3 className="text-xl font-medium mb-2 text-[var(--text-primary)]">No notifications found</h3>
-        <p className="text-[var(--text-secondary)]">Try adjusting your filters or check back later.</p>
+      <div className="text-center py-12 border border-[var(--border-color)] rounded-xl bg-[var(--card-bg)]">
+        <Mail className="w-12 h-12 mx-auto mb-3 text-[var(--text-tertiary)] opacity-50" />
+        <p className="text-base font-medium text-[var(--sidebar-text)]">No notifications found</p>
+        <p className="text-sm text-[var(--text-secondary)]">Try adjusting your filters or check back later.</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto bg-[var(--card-bg)] rounded-lg border border-[var(--border-color)]/20">
+    <div className="overflow-x-auto rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)]">
       <table className="w-full text-sm">
-        <thead className="bg-[var(--card-secondary-bg)] border-b border-[var(--border-color)]/20">
+        <thead className="bg-[var(--card-secondary-bg)] border-b border-[var(--border-color)]">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">ID</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Recipient</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Subject</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Status</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Retries</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Sent At</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Created</th>
-            <th className="px-4 py-3 text-right text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">Actions</th>
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] hidden sm:table-cell">
+              ID
+            </th>
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)]">
+              Recipient
+            </th>
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] hidden md:table-cell">
+              Subject
+            </th>
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)]">
+              Status
+            </th>
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] hidden lg:table-cell">
+              Retries
+            </th>
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] hidden xl:table-cell">
+              Sent At
+            </th>
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] hidden 2xl:table-cell">
+              Created
+            </th>
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)]">
+              Actions
+            </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[var(--border-color)]/10">
+        <tbody className="divide-y divide-[var(--border-color)]">
           {logs?.map((log) => {
             const isSending = sendingIds.has(log.id);
             return (
               <tr
                 key={log.id}
-                onClick={(e) =>{e.stopPropagation(); onView(log)}}
-                className={`hover:bg-[var(--card-secondary-bg)] transition-colors ${
-                  isSending ? 'sending-row' : ''
-                }`}
+                className="hover:bg-[var(--card-hover-bg)] transition-colors cursor-pointer"
+                onClick={() => onView(log)}
               >
-                <td className="px-4 py-3 text-[var(--text-primary)] whitespace-nowrap">#{log.id}</td>
-                <td className="px-4 py-3 text-[var(--text-primary)] whitespace-nowrap">{log.recipient_email}</td>
-                <td className="px-4 py-3 text-[var(--text-secondary)] max-w-[200px] truncate">
-                  {log.subject || '—'}
+                <td className="py-2.5 px-4 text-[var(--text-secondary)] font-mono text-xs hidden sm:table-cell">
+                  #{log.id}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap">
+                <td className="py-2.5 px-4 text-[var(--text-primary)] truncate max-w-[150px]">
+                  {log.recipient_email}
+                </td>
+                <td className="py-2.5 px-4 text-[var(--text-secondary)] truncate max-w-[150px] hidden md:table-cell">
+                  {log.subject || "—"}
+                </td>
+                <td className="py-2.5 px-4">
                   <span className={getStatusBadge(log.status)}>
-                    {log.status === 'resend' && <RotateCw className="w-3 h-3" />}
-                    {log.status === 'sent' && <CheckCircle className="w-3 h-3" />}
-                    {log.status === 'queued' && <Clock className="w-3 h-3" />}
-                    {log.status === 'failed' && <XCircle className="w-3 h-3" />}
+                    {log.status === "resend" && <RotateCw className="w-3 h-3" />}
+                    {log.status === "sent" && <CheckCircle className="w-3 h-3" />}
+                    {log.status === "queued" && <Clock className="w-3 h-3" />}
+                    {log.status === "failed" && <XCircle className="w-3 h-3" />}
                     {log.status}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-[var(--text-secondary)] whitespace-nowrap">
+                <td className="py-2.5 px-4 text-[var(--text-secondary)] hidden lg:table-cell">
                   {log.retry_count} / {log.resend_count}
                 </td>
-                <td className="px-4 py-3 text-[var(--text-secondary)] whitespace-nowrap">
-                  {log.sent_at ? formatDate(log.sent_at) : '—'}
+                <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs hidden xl:table-cell">
+                  {log.sent_at ? formatDate(log.sent_at) : "—"}
                 </td>
-                <td className="px-4 py-3 text-[var(--text-secondary)] whitespace-nowrap">
+                <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs hidden 2xl:table-cell">
                   {formatDate(log.created_at)}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-right">
-                  <div className="flex items-center justify-end gap-2">
+                <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-1">
                     <button
-                      onClick={(e) =>{e.stopPropagation(); onView(log)}}
+                      onClick={() => onView(log)}
                       disabled={isSending}
-                      className="p-1.5 rounded-md hover:bg-[var(--card-hover-bg)] text-[var(--text-tertiary)] hover:text-[var(--primary-color)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-1.5 rounded-lg hover:bg-[var(--card-hover-bg)] text-[var(--text-tertiary)] hover:text-[var(--accent-blue)] transition-colors disabled:opacity-50"
                       title="View details"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
-                    {log.status === 'failed' && (
+                    {log.status === "failed" && (
                       <button
-                        onClick={(e) =>{e.stopPropagation(); onRetry(log.id)}}
+                        onClick={() => onRetry(log.id)}
                         disabled={isSending}
-                        className="p-1.5 rounded-md hover:bg-[var(--card-hover-bg)] text-[var(--text-tertiary)] hover:text-[var(--primary-color)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-1.5 rounded-lg hover:bg-[var(--card-hover-bg)] text-[var(--text-tertiary)] hover:text-[var(--primary-color)] transition-colors disabled:opacity-50"
                         title="Retry failed"
                       >
                         {isSending ? (
@@ -140,11 +159,11 @@ export const NotificationTable: React.FC<NotificationTableProps> = ({
                         )}
                       </button>
                     )}
-                    {(log.status === 'sent' || log.status === 'resend') && (
+                    {(log.status === "sent" || log.status === "resend") && (
                       <button
-                        onClick={(e) =>{e.stopPropagation(); onResend(log.id)}}
+                        onClick={() => onResend(log.id)}
                         disabled={isSending}
-                        className="p-1.5 rounded-md hover:bg-[var(--card-hover-bg)] text-[var(--text-tertiary)] hover:text-[var(--primary-color)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-1.5 rounded-lg hover:bg-[var(--card-hover-bg)] text-[var(--text-tertiary)] hover:text-[var(--primary-color)] transition-colors disabled:opacity-50"
                         title="Resend"
                       >
                         {isSending ? (
@@ -155,9 +174,9 @@ export const NotificationTable: React.FC<NotificationTableProps> = ({
                       </button>
                     )}
                     <button
-                      onClick={(e) =>{e.stopPropagation(); onDelete(log.id)}}
+                      onClick={() => onDelete(log.id)}
                       disabled={isSending}
-                      className="p-1.5 rounded-md hover:bg-red-500/10 text-[var(--text-tertiary)] hover:text-red-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-1.5 rounded-lg hover:bg-[var(--danger-color)]/10 text-[var(--text-tertiary)] hover:text-[var(--danger-color)] transition-colors disabled:opacity-50"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />

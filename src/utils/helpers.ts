@@ -24,3 +24,18 @@ export const generateSKU = (name: string, category: string): string => {
   const randomPart = Math.random().toString(36).substring(2, 5).toUpperCase()
   return `${namePart}-${categoryPart}-${randomPart}`
 }
+
+
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+export function toTitleCase(str: string) {
+  return str.replace(
+    /\w\S*/g,
+    (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(),
+  );
+}

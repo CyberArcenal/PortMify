@@ -1,12 +1,12 @@
-// src/pages/blog/hooks/useblogs?.ts
+// src/pages/blog/hooks/useBlogs.ts
 import blogAPI, { Blog } from "@/api/core/blog";
 import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface BlogFilters {
   search: string;
-  status: string; // 'draft', 'published', ''
-  featured: string; // 'true', 'false', ''
-  category: string; // category slug
+  status: string;
+  featured: string;
+  category: string;
 }
 
 export interface BlogWithDetails extends Blog {}
@@ -20,22 +20,18 @@ export interface PaginationType {
 
 interface UseBlogsReturn {
   blogs: BlogWithDetails[];
-  paginatedBlogs: BlogWithDetails[];
   filters: BlogFilters;
-  setFilters: React.Dispatch<React.SetStateAction<BlogFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedBlogs: number[];
   setSelectedBlogs: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof BlogFilters, value: string) => void;
   resetFilters: () => void;
@@ -49,6 +45,7 @@ const useBlogs = (initialFilters?: Partial<BlogFilters>): UseBlogsReturn => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedBlogs, setSelectedBlogs] = useState<number[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -58,7 +55,6 @@ const useBlogs = (initialFilters?: Partial<BlogFilters>): UseBlogsReturn => {
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<BlogFilters>({
     search: "",
@@ -129,7 +125,7 @@ const useBlogs = (initialFilters?: Partial<BlogFilters>): UseBlogsReturn => {
       setFilters((prev) => ({ ...prev, [key]: value }));
       setCurrentPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -144,13 +140,13 @@ const useBlogs = (initialFilters?: Partial<BlogFilters>): UseBlogsReturn => {
 
   const toggleBlogSelection = useCallback((id: number) => {
     setSelectedBlogs((prev) =>
-      prev.includes(id) ? prev.filter((bid) => bid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((bid) => bid !== id) : [...prev, id]
     );
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedBlogs((prev) =>
-      prev.length === blogs?.length ? [] : blogs?.map((b) => b.id),
+      prev.length === blogs.length ? [] : blogs.map((b) => b.id)
     );
   }, [blogs]);
 
@@ -173,20 +169,18 @@ const useBlogs = (initialFilters?: Partial<BlogFilters>): UseBlogsReturn => {
 
   return {
     blogs,
-    paginatedBlogs: blogs,
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedBlogs,
     setSelectedBlogs,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,

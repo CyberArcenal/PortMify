@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface CommentFilters {
   search: string;
-  approved: string; // "true", "false", ""
-  content_type: string; // "blog", "project", ""
-  object_id: string; // number as string
+  approved: string;
+  content_type: string;
+  object_id: string;
 }
 
 export interface CommentWithDetails extends Comment {}
@@ -20,22 +20,18 @@ export interface PaginationType {
 
 interface UseCommentsReturn {
   comments: CommentWithDetails[];
-  paginatedComments: CommentWithDetails[];
   filters: CommentFilters;
-  setFilters: React.Dispatch<React.SetStateAction<CommentFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedComments: number[];
   setSelectedComments: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof CommentFilters, value: string) => void;
   resetFilters: () => void;
@@ -44,13 +40,12 @@ interface UseCommentsReturn {
   handleSort: (key: string) => void;
 }
 
-const useComments = (
-  initialFilters?: Partial<CommentFilters>,
-): UseCommentsReturn => {
+const useComments = (initialFilters?: Partial<CommentFilters>): UseCommentsReturn => {
   const [comments, setComments] = useState<CommentWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedComments, setSelectedComments] = useState<number[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -60,7 +55,6 @@ const useComments = (
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<CommentFilters>({
     search: "",
@@ -91,8 +85,7 @@ const useComments = (
         sortOrder: sortConfig.direction,
       };
       if (filters.search) params.search = filters.search;
-      if (filters.approved !== "")
-        params.approved = filters.approved === "true";
+      if (filters.approved !== "") params.approved = filters.approved === "true";
       if (filters.content_type) params.content_type = filters.content_type;
       if (filters.object_id) params.object_id = parseInt(filters.object_id);
 
@@ -113,16 +106,7 @@ const useComments = (
         setLoading(false);
       }
     }
-  }, [
-    currentPage,
-    pageSize,
-    sortConfig.key,
-    sortConfig.direction,
-    filters.search,
-    filters.approved,
-    filters.content_type,
-    filters.object_id,
-  ]);
+  }, [currentPage, pageSize, sortConfig.key, sortConfig.direction, filters]);
 
   useEffect(() => {
     fetchComments();
@@ -141,7 +125,7 @@ const useComments = (
       setFilters((prev) => ({ ...prev, [key]: value }));
       setCurrentPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -156,13 +140,13 @@ const useComments = (
 
   const toggleCommentSelection = useCallback((id: number) => {
     setSelectedComments((prev) =>
-      prev.includes(id) ? prev.filter((cid) => cid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((cid) => cid !== id) : [...prev, id]
     );
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedComments((prev) =>
-      prev.length === comments?.length ? [] : comments?.map((c) => c.id),
+      prev.length === comments.length ? [] : comments.map((c) => c.id)
     );
   }, [comments]);
 
@@ -185,20 +169,18 @@ const useComments = (
 
   return {
     comments,
-    paginatedComments: comments,
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedComments,
     setSelectedComments,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,

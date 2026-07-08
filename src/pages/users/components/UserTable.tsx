@@ -1,6 +1,6 @@
 // src/pages/users/components/UserTable.tsx
 import React from "react";
-import { ChevronUp, ChevronDown, CheckCircle, XCircle, Shield, ShieldCheck, Crown } from "lucide-react";
+import { ChevronUp, ChevronDown, CheckCircle, XCircle, Shield, Crown } from "lucide-react";
 import type { UserWithDetails } from "../hooks/useUsers";
 import { formatDate } from "@/utils/formatters";
 import UserActionsDropdown from "./UserActionsDropdown";
@@ -37,184 +37,147 @@ const UserTable: React.FC<UserTableProps> = ({
   const getSortIcon = (key: string) => {
     if (sortConfig.key !== key) return null;
     return sortConfig.direction === "asc" ? (
-      <ChevronUp className="icon-sm" />
+      <ChevronUp className="w-3 h-3" />
     ) : (
-      <ChevronDown className="icon-sm" />
+      <ChevronDown className="w-3 h-3" />
     );
   };
 
   const getActiveBadge = (isActive: boolean) => {
     return isActive
-      ? "bg-[var(--accent-green-light)] text-[var(--accent-green)]"
-      : "bg-[var(--accent-red-light)] text-[var(--accent-red)]";
+      ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)]"
+      : "bg-[var(--status-inactive-bg)] text-[var(--status-inactive-text)]";
   };
 
   const getStaffBadge = (isStaff: boolean) => {
     return isStaff
-      ? "bg-[var(--accent-blue-light)] text-[var(--accent-blue)]"
-      : "bg-[var(--accent-gray-light)] text-[var(--text-secondary)]";
+      ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)]"
+      : "bg-[var(--status-inactive-bg)] text-[var(--status-inactive-text)]";
   };
 
   const getSuperuserBadge = (isSuperuser: boolean) => {
     return isSuperuser
-      ? "bg-[var(--accent-yellow-light)] text-[var(--accent-yellow)]"
-      : "bg-[var(--accent-gray-light)] text-[var(--text-secondary)]";
+      ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)]"
+      : "bg-[var(--status-inactive-bg)] text-[var(--status-inactive-text)]";
   };
 
+  if (users.length === 0) {
+    return (
+      <div className="text-center py-8 text-[var(--text-secondary)]">
+        No users found.
+      </div>
+    );
+  }
+
   return (
-    <div
-      className="overflow-x-auto rounded-md border compact-table"
-      style={{ borderColor: "var(--border-color)" }}
-    >
-      <table
-        className="min-w-full"
-        style={{ borderColor: "var(--border-color)" }}
-      >
-        <thead style={{ backgroundColor: "var(--card-secondary-bg)" }}>
+    <div className="overflow-x-auto rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)]">
+      <table className="w-full text-sm">
+        <thead className="bg-[var(--card-secondary-bg)] border-b border-[var(--border-color)]">
           <tr>
-            <th
-              scope="col"
-              className="w-10 px-2 py-2 text-left text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="py-3 px-4 w-8">
               <input
                 type="checkbox"
-                checked={
-                  users?.length > 0 &&
-                  selectedUsers?.length === users?.length
-                }
+                checked={users.length > 0 && selectedUsers.length === users.length}
                 onChange={onToggleSelectAll}
-                className="h-3 w-3 rounded border-gray-300"
-                style={{ color: "var(--accent-blue)" }}
+                className="rounded border-[var(--border-color)] cursor-pointer"
               />
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)]"
               onClick={() => onSort("username")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Username</span>
-                {getSortIcon("username")}
+              <div className="flex items-center gap-1">
+                Username {getSortIcon("username")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden md:table-cell"
               onClick={() => onSort("email")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Email</span>
-                {getSortIcon("email")}
+              <div className="flex items-center gap-1">
+                Email {getSortIcon("email")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
-              onClick={() => onSort("full_name")}
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] hidden lg:table-cell"
             >
-              <div className="flex items-center gap-xs">
-                <span>Full Name</span>
-                {getSortIcon("full_name")}
-              </div>
+              Full Name
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden xl:table-cell"
               onClick={() => onSort("user_type")}
             >
-              <div className="flex items-center gap-xs">
-                <span>User Type</span>
-                {getSortIcon("user_type")}
+              <div className="flex items-center gap-1">
+                User Type {getSortIcon("user_type")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden sm:table-cell"
               onClick={() => onSort("is_active")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Active</span>
-                {getSortIcon("is_active")}
+              <div className="flex items-center gap-1">
+                Active {getSortIcon("is_active")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] hidden 2xl:table-cell"
               onClick={() => onSort("is_staff")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Staff</span>
-                {getSortIcon("is_staff")}
+              <div className="flex items-center gap-1">
+                Staff {getSortIcon("is_staff")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] hidden 2xl:table-cell"
               onClick={() => onSort("is_superuser")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Superuser</span>
-                {getSortIcon("is_superuser")}
+              <div className="flex items-center gap-1">
+                Superuser {getSortIcon("is_superuser")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden 3xl:table-cell"
               onClick={() => onSort("date_joined")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Joined</span>
-                {getSortIcon("date_joined")}
+              <div className="flex items-center gap-1">
+                Joined {getSortIcon("date_joined")}
               </div>
             </th>
-            <th
-              scope="col"
-              className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)]">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody style={{ backgroundColor: "var(--card-bg)" }}>
-          {users?.map((user) => (
+        <tbody>
+          {users.map((user) => (
             <tr
               key={user.id}
+              className="border-b border-[var(--border-color)] hover:bg-[var(--card-hover-bg)] transition-colors cursor-pointer"
               onClick={() => onView(user)}
-              className={`hover:bg-[var(--card-secondary-bg)] transition-colors cursor-pointer ${
-                selectedUsers?.includes(user.id)
-                  ? "bg-[var(--accent-blue-dark)]"
-                  : ""
-              }`}
-              style={{ borderBottom: "1px solid var(--border-color)" }}
             >
-              <td className="px-2 py-2 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
-                  checked={selectedUsers?.includes(user.id)}
+                  checked={selectedUsers.includes(user.id)}
                   onChange={() => onToggleSelect(user.id)}
-                  className="h-3 w-3 rounded border-gray-300"
-                  style={{ color: "var(--accent-blue)" }}
+                  className="rounded border-[var(--border-color)] cursor-pointer"
                 />
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm font-medium" style={{ color: "var(--sidebar-text)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-primary)] font-medium">
                 {user.username}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs hidden md:table-cell">
                 {user.email}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs hidden lg:table-cell">
                 {user.full_name}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs hidden xl:table-cell">
                 {user.user_type_display}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4 hidden sm:table-cell">
                 <span
-                  className={`inline-flex items-center px-xs py-xs rounded-full text-xs font-medium ${getActiveBadge(
-                    user.is_active,
-                  )}`}
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getActiveBadge(user.is_active)}`}
                 >
                   {user.is_active ? (
                     <>
@@ -229,11 +192,9 @@ const UserTable: React.FC<UserTableProps> = ({
                   )}
                 </span>
               </td>
-              <td className="px-4 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4 hidden 2xl:table-cell">
                 <span
-                  className={`inline-flex items-center px-xs py-xs rounded-full text-xs font-medium ${getStaffBadge(
-                    user.is_staff,
-                  )}`}
+                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getStaffBadge(user.is_staff)}`}
                 >
                   {user.is_staff ? (
                     <>
@@ -245,11 +206,9 @@ const UserTable: React.FC<UserTableProps> = ({
                   )}
                 </span>
               </td>
-              <td className="px-4 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4 hidden 2xl:table-cell">
                 <span
-                  className={`inline-flex items-center px-xs py-xs rounded-full text-xs font-medium ${getSuperuserBadge(
-                    user.is_superuser,
-                  )}`}
+                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getSuperuserBadge(user.is_superuser)}`}
                 >
                   {user.is_superuser ? (
                     <>
@@ -261,10 +220,10 @@ const UserTable: React.FC<UserTableProps> = ({
                   )}
                 </span>
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs hidden 3xl:table-cell">
                 {formatDate(user.date_joined)}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <UserActionsDropdown
                   user={user}
                   onView={onView}

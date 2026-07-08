@@ -44,7 +44,6 @@ const useStats = (): UseStatsReturn => {
         await statsAPI.patch(data);
       } else {
         // Otherwise create
-        // We need to provide all required fields; use defaults if not provided
         const defaultData = {
           projects_completed: 0,
           client_satisfaction: 0,

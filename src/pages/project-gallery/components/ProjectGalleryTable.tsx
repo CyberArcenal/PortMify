@@ -30,115 +30,89 @@ const ProjectGalleryTable: React.FC<ProjectGalleryTableProps> = ({
   const getSortIcon = (key: string) => {
     if (sortConfig.key !== key) return null;
     return sortConfig.direction === "asc" ? (
-      <ChevronUp className="icon-sm" />
+      <ChevronUp className="w-3 h-3" />
     ) : (
-      <ChevronDown className="icon-sm" />
+      <ChevronDown className="w-3 h-3" />
     );
   };
 
+  if (images.length === 0) {
+    return (
+      <div className="text-center py-8 text-[var(--text-secondary)]">
+        No images found for this project.
+      </div>
+    );
+  }
+
   return (
-    <div
-      className="overflow-x-auto rounded-md border compact-table"
-      style={{ borderColor: "var(--border-color)" }}
-    >
-      <table
-        className="min-w-full"
-        style={{ borderColor: "var(--border-color)" }}
-      >
-        <thead style={{ backgroundColor: "var(--card-secondary-bg)" }}>
+    <div className="overflow-x-auto rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)]">
+      <table className="w-full text-sm">
+        <thead className="bg-[var(--card-secondary-bg)] border-b border-[var(--border-color)]">
           <tr>
-            <th
-              scope="col"
-              className="w-10 px-2 py-2 text-left text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="py-3 px-4 w-8">
               <input
                 type="checkbox"
-                checked={
-                  images?.length > 0 &&
-                  selectedImages?.length === images?.length
-                }
+                checked={images.length > 0 && selectedImages.length === images.length}
                 onChange={onToggleSelectAll}
-                className="h-3 w-3 rounded border-gray-300"
-                style={{ color: "var(--accent-blue)" }}
+                className="rounded border-[var(--border-color)] cursor-pointer"
               />
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden sm:table-cell"
               onClick={() => onSort("order")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Order</span>
-                {getSortIcon("order")}
+              <div className="flex items-center gap-1">
+                Order {getSortIcon("order")}
               </div>
             </th>
-            <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider"
-            >
-              <div className="flex items-center gap-xs">
-                <span>Image</span>
-              </div>
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)]">
+              Image
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] hidden md:table-cell"
             >
-              <div className="flex items-center gap-xs">
-                <span>URL</span>
-              </div>
+              URL
             </th>
-            <th
-              scope="col"
-              className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)]">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody style={{ backgroundColor: "var(--card-bg)" }}>
-          {images?.map((image) => (
+        <tbody>
+          {images.map((image) => (
             <tr
               key={image.id}
+              className="border-b border-[var(--border-color)] hover:bg-[var(--card-hover-bg)] transition-colors cursor-pointer"
               onClick={() => onView(image)}
-              className={`hover:bg-[var(--card-secondary-bg)] transition-colors cursor-pointer ${
-                selectedImages?.includes(image.id)
-                  ? "bg-[var(--accent-blue-dark)]"
-                  : ""
-              }`}
-              style={{ borderBottom: "1px solid var(--border-color)" }}
             >
-              <td className="px-2 py-2 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
-                  checked={selectedImages?.includes(image.id)}
+                  checked={selectedImages.includes(image.id)}
                   onChange={() => onToggleSelect(image.id)}
-                  className="h-3 w-3 rounded border-gray-300"
-                  style={{ color: "var(--accent-blue)" }}
+                  className="rounded border-[var(--border-color)] cursor-pointer"
                 />
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs hidden sm:table-cell">
                 {image.order}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap">
+              <td className="py-2.5 px-4">
                 {image.image_url ? (
                   <img
                     src={image.image_url}
                     alt="Gallery"
-                    className="h-10 w-10 object-cover rounded"
+                    className="h-12 w-12 object-cover rounded-lg border border-[var(--border-color)]"
                   />
                 ) : (
-                  <div className="h-10 w-10 bg-[var(--card-secondary-bg)] flex items-center justify-center rounded">
+                  <div className="h-12 w-12 bg-[var(--card-secondary-bg)] flex items-center justify-center rounded-lg border border-[var(--border-color)]">
                     <Image className="w-5 h-5 text-[var(--text-secondary)]" />
                   </div>
                 )}
               </td>
-              <td className="px-4 py-2 text-sm text-[var(--text-secondary)] truncate max-w-xs">
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs truncate max-w-[200px] hidden md:table-cell">
                 {image.image_url}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <ProjectGalleryActionsDropdown
                   image={image}
                   onView={onView}

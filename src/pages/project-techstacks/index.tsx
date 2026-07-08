@@ -1,35 +1,33 @@
 // src/pages/project-techstacks/index.tsx
-import React, { useState, useEffect } from "react";
-import { Plus, Filter, RefreshCw, Cpu } from "lucide-react";
-import { Link } from "react-router-dom";
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import { Plus, RefreshCw, Eye, EyeOff, Filter, Cpu } from "lucide-react";
 import Button from "../../components/UI/Button";
-import Pagination from "../../components/Shared/Pagination1";
 import { dialogs } from "../../utils/dialogs";
 import { showSuccess, showError } from "../../utils/notification";
+import { usePagination } from "../../contexts/PaginationContext";
 
 import useProjectTechStacks, {
   type ProjectTechStackWithDetails,
 } from "./hooks/useProjectTechStacks";
-import projectTechStackAPI from "@/api/core/project_techstack";
-import projectAPI, { Project } from "@/api/core/project";
 import useProjectTechStackForm from "./hooks/useProjectTechStackForm";
 import { useProjectTechStackView } from "./hooks/useProjectTechStackView";
-import FilterBar from "./components/FilterBar";
 import ProjectTechStackTable from "./components/ProjectTechStackTable";
-import ProjectTechStackFormDialog from "./components/ProjectTechStackFormDialog";
 import ProjectTechStackViewDialog from "./components/ProjectTechStackViewDialog";
+import ProjectTechStackFormDialog from "./components/ProjectTechStackFormDialog";
+import FilterBar from "./components/FilterBar";
+import SummaryCards from "../../components/UI/SummaryCards";
+import BulkActionsBar from "../../components/UI/BulkActionsBar";
 import ProjectSelect from "@/components/Selects/Project";
+import projectTechStackAPI from "@/api/core/project_techstack";
+
+import { Cpu as CpuIcon, Layers, ListOrdered } from "lucide-react";
 
 const ProjectTechStacksPage: React.FC = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
-    null,
-  );
-  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [selectedProjectName, setSelectedProjectName] = useState<string>("");
 
   const {
     techStacks,
-    paginatedTechStacks,
     filters,
     loading,
     error,
@@ -47,32 +45,74 @@ const ProjectTechStacksPage: React.FC = () => {
     toggleItemSelection,
     toggleSelectAll,
     handleSort,
+    totalCount,
   } = useProjectTechStacks(selectedProjectId);
 
   const formDialog = useProjectTechStackForm();
   const viewDialog = useProjectTechStackView();
 
+  const [showStats, setShowStats] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Load projects for dropdown
-  useEffect(() => {
-    const fetchProjects = async () => {
-      setLoadingProjects(true);
-      try {
-        const response = await projectAPI.list({ page_size: 100 });
-        setProjects(response.results);
-        if (response.results.length > 0 && !selectedProjectId) {
-          setSelectedProjectId(response.results[0].id);
-        }
-      } catch (err: any) {
-        showError(err.message || "Failed to load projects");
-      } finally {
-        setLoadingProjects(false);
-      }
-    };
-    fetchProjects();
-  }, []);
+  const { setPagination, clearPagination } = usePagination();
 
+  // ─── Pagination Integration ──────────────────────────────────────
+  const handlePageChange = useCallback(
+    (newPage: number) => setCurrentPage(newPage),
+    [setCurrentPage]
+  );
+
+  const handlePageSizeChange = useCallback(
+    (newSize: number) => {
+      setPageSize(newSize);
+      setCurrentPage(1);
+    },
+    [setPageSize, setCurrentPage]
+  );
+
+  const handlersRef = useRef({
+    onPageChange: handlePageChange,
+    onPageSizeChange: handlePageSizeChange,
+  });
+
+  useEffect(() => {
+    handlersRef.current = {
+      onPageChange: handlePageChange,
+      onPageSizeChange: handlePageSizeChange,
+    };
+  }, [handlePageChange, handlePageSizeChange]);
+
+  const prevPageRef = useRef(currentPage);
+  const prevTotalRef = useRef(totalCount);
+  const prevLimitRef = useRef(pageSize);
+
+  useEffect(() => {
+    const pageChanged = prevPageRef.current !== currentPage;
+    const totalChanged = prevTotalRef.current !== totalCount;
+    const limitChanged = prevLimitRef.current !== pageSize;
+
+    if (pageChanged || totalChanged || limitChanged) {
+      prevPageRef.current = currentPage;
+      prevTotalRef.current = totalCount;
+      prevLimitRef.current = pageSize;
+
+      setPagination({
+        currentPage,
+        totalItems: totalCount,
+        pageSize,
+        onPageChange: handlersRef.current.onPageChange,
+        onPageSizeChange: handlersRef.current.onPageSizeChange,
+        pageSizeOptions: [10, 25, 50, 100],
+        showPageSize: true,
+      });
+    }
+  }, [currentPage, totalCount, pageSize, setPagination]);
+
+  useEffect(() => {
+    return () => clearPagination();
+  }, [clearPagination]);
+
+  // ─── Handlers ────────────────────────────────────────────────────
   const handleDelete = async (item: ProjectTechStackWithDetails) => {
     const confirmed = await dialogs.confirm({
       title: "Delete Tech Stack Item",
@@ -89,17 +129,15 @@ const ProjectTechStacksPage: React.FC = () => {
   };
 
   const handleBulkDelete = async () => {
-    if (selectedItems?.length === 0 || !selectedProjectId) return;
+    if (selectedItems.length === 0 || !selectedProjectId) return;
     const confirmed = await dialogs.confirm({
       title: "Bulk Delete",
-      message: `Delete ${selectedItems?.length} items?`,
+      message: `Delete ${selectedItems.length} item${selectedItems.length > 1 ? "s" : ""}?`,
     });
     if (!confirmed) return;
     try {
-      await Promise.all(
-        selectedItems?.map((id) => projectTechStackAPI.delete(id)),
-      );
-      showSuccess(`${selectedItems?.length} items deleted.`);
+      await Promise.all(selectedItems.map((id) => projectTechStackAPI.delete(id)));
+      showSuccess(`${selectedItems.length} item${selectedItems.length > 1 ? "s" : ""} deleted.`);
       setSelectedItems([]);
       reload();
     } catch (err: any) {
@@ -107,62 +145,74 @@ const ProjectTechStacksPage: React.FC = () => {
     }
   };
 
-  const getDisplayRange = () => {
-    const start = (currentPage - 1) * pageSize + 1;
-    const end = Math.min(currentPage * pageSize, pagination.count);
-    return { start, end };
+  const handleProjectChange = (projectId: number | null, project?: any) => {
+    setSelectedProjectId(projectId);
+    setSelectedProjectName(project?.title || "");
+    setCurrentPage(1);
   };
-  const { start, end } = getDisplayRange();
+
+  // ─── Summary Cards ──────────────────────────────────────────────
+  const summaryCards = [
+    {
+      title: "Total Items",
+      value: pagination.count,
+      icon: CpuIcon,
+      color: "blue",
+    },
+    {
+      title: "Categories",
+      value: [...new Set(techStacks?.map((t) => t.category))].length || 0,
+      icon: Layers,
+      color: "purple",
+    },
+    {
+      title: "Current Project",
+      value: selectedProjectName || "None",
+      icon: ListOrdered,
+      color: "green",
+    },
+  ];
+
+  const hasFilters = Object.values(filters).some((v) => v);
 
   return (
-    <div
-      className="compact-card rounded-md shadow-md border"
-      style={{
-        backgroundColor: "var(--card-bg)",
-        borderColor: "var(--border-color)",
-      }}
-    >
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-sm mb-4">
+    <div className="space-y-4">
+      {/* ─── Header ─── */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2
-            className="text-base font-semibold"
-            style={{ color: "var(--sidebar-text)" }}
-          >
+          <h2 className="text-lg font-semibold text-[var(--sidebar-text)]">
             Project Tech Stack
           </h2>
-          <p
-            className="mt-xs text-sm"
-            style={{ color: "var(--text-secondary)" }}
-          >
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
             Manage technologies used in your projects
           </p>
         </div>
-        <div className="flex flex-wrap gap-xs w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2">
           <button
-            className="compact-button rounded-md flex items-center transition-colors ease-in-out hover:scale-105 hover:shadow-md disabled:opacity-50"
-            style={{
-              backgroundColor: "var(--card-secondary-bg)",
-              color: "var(--sidebar-text)",
-            }}
-            onClick={() => setShowFilters(!showFilters)}
+            onClick={() => setShowStats(!showStats)}
+            className="p-2 rounded-lg hover:bg-[var(--card-hover-bg)] transition-colors"
+            title={showStats ? "Hide summary" : "Show summary"}
           >
-            <Filter className="icon-sm mr-xs" />
-            Filters {showFilters ? "↑" : "↓"}
+            {showStats ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="p-2 rounded-lg hover:bg-[var(--card-hover-bg)] transition-colors"
+            title={showFilters ? "Hide filters" : "Show filters"}
+          >
+            <Filter className="w-4 h-4" />
           </button>
           <button
             onClick={reload}
             disabled={loading}
-            className="btn btn-secondary btn-sm rounded-md flex items-center transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-md disabled:opacity-50"
+            className="p-2 rounded-lg hover:bg-[var(--card-hover-bg)] transition-colors disabled:opacity-50"
+            title="Refresh"
           >
-            <RefreshCw
-              className={`icon-sm mr-1 ${loading ? "animate-spin" : ""}`}
-            />
-            {loading ? "Refreshing..." : "Refresh"}
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
           <Button
             onClick={formDialog.openAdd}
-            variant="success"
+            variant="primary"
             size="sm"
             icon={Plus}
             iconPosition="left"
@@ -173,43 +223,23 @@ const ProjectTechStacksPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Project Selector */}
-      <div className="mb-4">
-        <label
-          className="block text-sm font-medium mb-1"
-          style={{ color: "var(--sidebar-text)" }}
-        >
+      {/* ─── Summary Cards ─── */}
+      {showStats && <SummaryCards cards={summaryCards} columns={3} />}
+
+      {/* ─── Project Selector ─── */}
+      <div className="bg-[var(--card-secondary-bg)] rounded-xl p-4">
+        <label className="block text-sm font-medium mb-1 text-[var(--sidebar-text)]">
           Select Project
         </label>
         <ProjectSelect
+          onChange={(projectId, project) => {
+            handleProjectChange(projectId, project);
+          }}
           value={selectedProjectId || null}
-          disabled={loading}
-          onChange={(projectId, project) => {setSelectedProjectId(projectId)}}
         />
       </div>
 
-      {/* Summary Banner */}
-      {techStacks?.length > 0 && (
-        <div
-          className="mb-4 compact-card rounded-md border p-3 flex flex-wrap items-center justify-between gap-2"
-          style={{
-            backgroundColor: "var(--card-secondary-bg)",
-            borderColor: "var(--border-color)",
-          }}
-        >
-          <div className="flex items-center gap-2 text-xs">
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-[var(--accent-blue)]"></span>
-              {techStacks?.length} Technologies
-            </span>
-          </div>
-          <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
-            Total: {pagination.count} items
-          </div>
-        </div>
-      )}
-
-      {/* Filters */}
+      {/* ─── Filter Bar ─── */}
       {showFilters && (
         <FilterBar
           filters={filters}
@@ -218,187 +248,80 @@ const ProjectTechStacksPage: React.FC = () => {
         />
       )}
 
-      {/* Bulk Selection */}
-      {selectedItems?.length > 0 && (
-        <div
-          className="mb-2 compact-card rounded-md border flex items-center justify-between p-2"
-          style={{
-            backgroundColor: "var(--accent-blue-dark)",
-            borderColor: "var(--accent-blue)",
+      {/* ─── Bulk Actions ─── */}
+      {selectedItems.length > 0 && (
+        <BulkActionsBar
+          selectedCount={selectedItems.length}
+          onClearSelection={() => setSelectedItems([])}
+          onDelete={handleBulkDelete}
+          loading={loading}
+        />
+      )}
+
+      {/* ─── Table ─── */}
+      {loading && techStacks.length === 0 ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--primary-color)] border-t-transparent" />
+        </div>
+      ) : error ? (
+        <div className="text-center py-8 text-[var(--danger-color)]">
+          Error: {error}
+        </div>
+      ) : !selectedProjectId ? (
+        <div className="text-center py-12 border border-[var(--border-color)] rounded-xl bg-[var(--card-bg)]">
+          <Cpu className="w-12 h-12 mx-auto mb-3 text-[var(--text-tertiary)] opacity-50" />
+          <p className="text-base font-medium text-[var(--sidebar-text)]">
+            Please select a project to view its tech stack.
+          </p>
+        </div>
+      ) : (
+        <ProjectTechStackTable
+          items={techStacks}
+          selectedItems={selectedItems}
+          onToggleSelect={toggleItemSelection}
+          onToggleSelectAll={toggleSelectAll}
+          onSort={handleSort}
+          sortConfig={sortConfig}
+          onView={(item) => viewDialog.open(item.id)}
+          onEdit={(item) => {
+            formDialog.openEdit(item);
           }}
-        >
-          <span
-            className="font-medium text-sm"
-            style={{ color: "var(--accent-green)" }}
-          >
-            {selectedItems?.length} item(s) selected
-          </span>
-          <div className="flex gap-xs">
+          onDelete={handleDelete}
+        />
+      )}
+
+      {/* ─── Empty State ─── */}
+      {!loading && !error && selectedProjectId && techStacks.length === 0 && (
+        <div className="text-center py-12">
+          <Cpu className="w-12 h-12 mx-auto mb-3 text-[var(--text-tertiary)] opacity-50" />
+          <p className="text-base font-medium text-[var(--sidebar-text)]">
+            No tech stack items found for this project.
+          </p>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            {hasFilters
+              ? "Try adjusting your search or filters"
+              : "Start by adding your first technology"}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2 justify-center">
+            {hasFilters && (
+              <button
+                className="px-4 py-2 rounded-lg text-sm bg-[var(--primary-color)] text-white hover:bg-[var(--primary-hover)] transition-colors"
+                onClick={resetFilters}
+              >
+                Clear Filters
+              </button>
+            )}
             <button
-              className="compact-button bg-[var(--accent-red)] hover:bg-[var(--accent-red-hover)] text-white rounded-md"
-              onClick={handleBulkDelete}
-              title="Delete selected"
+              className="px-4 py-2 rounded-lg text-sm bg-[var(--primary-color)] text-white hover:bg-[var(--primary-hover)] transition-colors"
+              onClick={formDialog.openAdd}
             >
-              Delete
+              Add First Tech
             </button>
           </div>
         </div>
       )}
 
-      {/* Page Size & Info */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-sm mb-2">
-        <div className="flex items-center gap-sm">
-          <label className="text-sm" style={{ color: "var(--sidebar-text)" }}>
-            Show:
-          </label>
-          <select
-            value={pageSize}
-            onChange={(e) => setPageSize(Number(e.target.value))}
-            className="compact-input border rounded text-sm"
-            style={{
-              backgroundColor: "var(--card-bg)",
-              borderColor: "var(--border-color)",
-              color: "var(--sidebar-text)",
-            }}
-          >
-            {[10, 25, 50, 100].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-          <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            entries
-          </span>
-        </div>
-        <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          {pagination.count > 0 ? (
-            <>
-              Showing {start} to {end} of {pagination.count} entries
-            </>
-          ) : (
-            "No entries found"
-          )}
-        </div>
-      </div>
-
-      {/* Loading */}
-      {loading && (
-        <div className="flex justify-center py-4">
-          <div
-            className="animate-spin rounded-full h-6 w-6 border-b-2"
-            style={{ borderColor: "var(--accent-blue)" }}
-          ></div>
-        </div>
-      )}
-
-      {/* Error */}
-      {error && (
-        <div className="text-center py-4 text-red-500">Error: {error}</div>
-      )}
-
-      {/* Table */}
-      {!loading && !error && (
-        <>
-          <ProjectTechStackTable
-            items={paginatedTechStacks}
-            selectedItems={selectedItems}
-            onToggleSelect={toggleItemSelection}
-            onToggleSelectAll={toggleSelectAll}
-            onSort={handleSort}
-            sortConfig={sortConfig}
-            onView={(item) => viewDialog.open(item.id)}
-            onEdit={(item) => {
-              formDialog.openEdit(item);
-            }}
-            onDelete={handleDelete}
-          />
-
-          {/* Empty State */}
-          {techStacks?.length === 0 && selectedProjectId && (
-            <div
-              className="text-center py-8 border rounded-md"
-              style={{ borderColor: "var(--border-color)" }}
-            >
-              <Cpu
-                className="icon-xl mx-auto mb-2"
-                style={{ color: "var(--text-secondary)" }}
-              />
-              <p className="text-base" style={{ color: "var(--sidebar-text)" }}>
-                No tech stack items found for this project.
-              </p>
-              <p
-                className="mt-xs text-sm"
-                style={{ color: "var(--text-tertiary)" }}
-              >
-                {filters.search || filters.category
-                  ? "Try adjusting your filters"
-                  : "Start by adding your first technology"}
-              </p>
-              <div className="mt-2 gap-xs flex justify-center">
-                {(filters.search || filters.category) && (
-                  <button
-                    className="compact-button rounded-md"
-                    style={{
-                      backgroundColor: "var(--accent-blue)",
-                      color: "white",
-                    }}
-                    onClick={resetFilters}
-                  >
-                    Clear Filters
-                  </button>
-                )}
-                <Link
-                  to="#"
-                  className="compact-button rounded-md inline-block"
-                  style={{
-                    backgroundColor: "var(--accent-green)",
-                    color: "white",
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    formDialog.openAdd();
-                  }}
-                >
-                  Add First Tech
-                </Link>
-              </div>
-            </div>
-          )}
-
-          {!selectedProjectId && (
-            <div
-              className="text-center py-8 border rounded-md"
-              style={{ borderColor: "var(--border-color)" }}
-            >
-              <Cpu
-                className="icon-xl mx-auto mb-2"
-                style={{ color: "var(--text-secondary)" }}
-              />
-              <p className="text-base" style={{ color: "var(--sidebar-text)" }}>
-                Please select a project to view its tech stack.
-              </p>
-            </div>
-          )}
-
-          {/* Pagination */}
-          {techStacks?.length > 0 && pagination.total_pages > 1 && (
-            <div className="mt-2">
-              <Pagination
-                currentPage={currentPage}
-                totalItems={pagination.count}
-                pageSize={pageSize}
-                onPageChange={setCurrentPage}
-                onPageSizeChange={setPageSize}
-                pageSizeOptions={[10, 25, 50, 100]}
-                showPageSize={false}
-              />
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Dialogs */}
+      {/* ─── Dialogs ─── */}
       <ProjectTechStackFormDialog
         isOpen={formDialog.isOpen}
         mode={formDialog.mode}

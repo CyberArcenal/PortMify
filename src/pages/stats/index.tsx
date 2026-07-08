@@ -31,39 +31,25 @@ const StatsPage: React.FC = () => {
   };
 
   return (
-    <div
-      className="compact-card rounded-md shadow-md border"
-      style={{
-        backgroundColor: "var(--card-bg)",
-        borderColor: "var(--border-color)",
-      }}
-    >
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-sm mb-4">
+    <div className="space-y-4">
+      {/* ─── Header ─── */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2
-            className="text-base font-semibold"
-            style={{ color: "var(--sidebar-text)" }}
-          >
+          <h2 className="text-lg font-semibold text-[var(--sidebar-text)]">
             Statistics
           </h2>
-          <p
-            className="mt-xs text-sm"
-            style={{ color: "var(--text-secondary)" }}
-          >
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
             Manage your portfolio statistics
           </p>
         </div>
-        <div className="flex flex-wrap gap-xs w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={reload}
             disabled={loading}
-            className="btn btn-secondary btn-sm rounded-md flex items-center transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-md disabled:opacity-50"
+            className="p-2 rounded-lg hover:bg-[var(--card-hover-bg)] transition-colors disabled:opacity-50"
+            title="Refresh"
           >
-            <RefreshCw
-              className={`icon-sm mr-1 ${loading ? "animate-spin" : ""}`}
-            />
-            {loading ? "Refreshing..." : "Refresh"}
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
           <Button
             onClick={handleEdit}
@@ -73,51 +59,41 @@ const StatsPage: React.FC = () => {
             iconPosition="left"
             disabled={!stats && !loading}
           >
-            Edit Stats
+            {stats ? "Edit Stats" : "Create Stats"}
           </Button>
         </div>
       </div>
 
-      {/* Loading */}
+      {/* ─── Loading ─── */}
       {loading && (
-        <div className="flex justify-center py-8">
-          <div
-            className="animate-spin rounded-full h-8 w-8 border-b-2"
-            style={{ borderColor: "var(--accent-blue)" }}
-          ></div>
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--primary-color)] border-t-transparent" />
         </div>
       )}
 
-      {/* Error */}
+      {/* ─── Error ─── */}
       {error && (
-        <div className="text-center py-4 text-red-500">Error: {error}</div>
+        <div className="text-center py-8 text-[var(--danger-color)]">
+          Error: {error}
+        </div>
       )}
 
-      {/* Stats Display */}
+      {/* ─── Stats Display ─── */}
       {!loading && !error && stats && (
         <StatsDisplay stats={stats} />
       )}
 
-      {/* Empty State (if no stats yet) */}
+      {/* ─── Empty State ─── */}
       {!loading && !error && !stats && (
-        <div
-          className="text-center py-8 border rounded-md"
-          style={{ borderColor: "var(--border-color)" }}
-        >
-          <BarChart3
-            className="icon-xl mx-auto mb-2"
-            style={{ color: "var(--text-secondary)" }}
-          />
-          <p className="text-base" style={{ color: "var(--sidebar-text)" }}>
+        <div className="text-center py-12 border border-[var(--border-color)] rounded-xl bg-[var(--card-bg)]">
+          <BarChart3 className="w-12 h-12 mx-auto mb-3 text-[var(--text-tertiary)] opacity-50" />
+          <p className="text-base font-medium text-[var(--sidebar-text)]">
             No statistics found.
           </p>
-          <p
-            className="mt-xs text-sm"
-            style={{ color: "var(--text-tertiary)" }}
-          >
-            Click the Edit button to create your first stats.
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            Click the button below to create your first stats.
           </p>
-          <div className="mt-2">
+          <div className="mt-4">
             <Button
               onClick={handleEdit}
               variant="primary"
@@ -131,15 +107,13 @@ const StatsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Form Dialog */}
-      {isFormOpen && (
-        <StatsFormDialog
-          isOpen={isFormOpen}
-          initialData={stats}
-          onClose={handleFormClose}
-          onSuccess={handleFormSuccess}
-        />
-      )}
+      {/* ─── Form Dialog ─── */}
+      <StatsFormDialog
+        isOpen={isFormOpen}
+        initialData={stats}
+        onClose={handleFormClose}
+        onSuccess={handleFormSuccess}
+      />
     </div>
   );
 };

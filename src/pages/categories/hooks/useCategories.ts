@@ -1,13 +1,15 @@
-// src/pages/categories/hooks/usecategories?.ts
+// src/pages/categories/hooks/useCategories.ts
 import categoryAPI, { Category } from "@/api/core/category";
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface CategoryFilters {
   search: string;
-  featured: string; // "true", "false", ""
+  featured: string;
 }
 
-export interface CategoryWithDetails extends Category {}
+export interface CategoryWithDetails extends Category {
+  blog_count?: number;
+}
 
 export interface PaginationType {
   current_page: number;
@@ -18,22 +20,18 @@ export interface PaginationType {
 
 interface UseCategoriesReturn {
   categories: CategoryWithDetails[];
-  paginatedCategories: CategoryWithDetails[];
   filters: CategoryFilters;
-  setFilters: React.Dispatch<React.SetStateAction<CategoryFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedCategories: number[];
   setSelectedCategories: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof CategoryFilters, value: string) => void;
   resetFilters: () => void;
@@ -42,13 +40,12 @@ interface UseCategoriesReturn {
   handleSort: (key: string) => void;
 }
 
-const useCategories = (
-  initialFilters?: Partial<CategoryFilters>,
-): UseCategoriesReturn => {
+const useCategories = (initialFilters?: Partial<CategoryFilters>): UseCategoriesReturn => {
   const [categories, setCategories] = useState<CategoryWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -58,11 +55,10 @@ const useCategories = (
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<CategoryFilters>({
     search: "",
-    featured: "true", // default show featured? maybe all, but we'll set all
+    featured: "",
     ...initialFilters,
   });
 
@@ -87,13 +83,12 @@ const useCategories = (
         sortOrder: sortConfig.direction,
       };
       if (filters.search) params.search = filters.search;
-      if (filters.featured !== "")
-        params.featured = filters.featured === "true";
+      if (filters.featured !== "") params.featured = filters.featured === "true";
 
       const response = await categoryAPI.list(params);
       if (mountedRef.current) {
         setCategories(response.results);
-        setTotalCount(response.count);
+        setTotalCount(response.pagination.count);
         setSelectedCategories([]);
         setError(null);
       }
@@ -107,14 +102,7 @@ const useCategories = (
         setLoading(false);
       }
     }
-  }, [
-    currentPage,
-    pageSize,
-    sortConfig.key,
-    sortConfig.direction,
-    filters.search,
-    filters.featured,
-  ]);
+  }, [currentPage, pageSize, sortConfig.key, sortConfig.direction, filters]);
 
   useEffect(() => {
     fetchCategories();
@@ -133,7 +121,7 @@ const useCategories = (
       setFilters((prev) => ({ ...prev, [key]: value }));
       setCurrentPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -146,13 +134,13 @@ const useCategories = (
 
   const toggleCategorySelection = useCallback((id: number) => {
     setSelectedCategories((prev) =>
-      prev.includes(id) ? prev.filter((cid) => cid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((cid) => cid !== id) : [...prev, id]
     );
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedCategories((prev) =>
-      prev.length === categories?.length ? [] : categories?.map((c) => c.id),
+      prev.length === categories.length ? [] : categories.map((c) => c.id)
     );
   }, [categories]);
 
@@ -175,20 +163,18 @@ const useCategories = (
 
   return {
     categories,
-    paginatedCategories: categories, // already paginated from API
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedCategories,
     setSelectedCategories,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,

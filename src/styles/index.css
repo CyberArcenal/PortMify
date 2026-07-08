@@ -1,148 +1,142 @@
 @import "tailwindcss";
 
-/* Reset and Base Styles */
+/* ========================================================
+   GREEN THEME – Kabisilya (Light)
+   ======================================================== */
+
 :root {
-  --primary-color: #0e9d7c;
-  --primary-hover: #1ab394;
-  --secondary-color: #64748b;
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
-  --danger-color: #ef4444;
+  /* Primary – Green */
+  --primary-color: #2e7d32;
+  --primary-hover: #388e3c;
+  --primary-light: #a5d6a7;
+  --primary-dark: #1b5e20;
 
-  /* Light theme backgrounds */
-  --background-color: #f9fafb; /* neutral light gray */
-  --sidebar-bg: #ffffff; /* white sidebar */
-  --sidebar-border: #e5e7eb; /* light border */
-  --sidebar-text: #1e293b; /* dark slate text */
-  --header-bg: #ffffff; /* white header */
+  /* Secondary – Gold */
+  --secondary-color: #f9a825;
+  --secondary-hover: #fbc02d;
+  --secondary-light: #fff3e0;
 
-  /* Text colors */
-  --text-primary: #1e293b; /* dark slate */
-  --text-secondary: #64748b; /* gray */
-  --text-tertiary: #6b7280; /* muted gray */
+  /* Status */
+  --success-color: #43a047;
+  --warning-color: #ffb300;
+  --danger-color: #e53935;
+
+  /* Backgrounds */
+  --background-color: #f5f7f0;
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #e0e0e0;
+  --sidebar-text: #1b5e20;
+  --header-bg: #ffffff;
+
+  /* Text */
+  --text-primary: #2e3b2c;
+  --text-secondary: #5d6b5b;
+  --text-tertiary: #8f9b8d;
+
+  /* Borders & Cards */
+  --border-color: #dce6d5;
+  --card-bg: #ffffff;
+  --card-secondary-bg: #fafcf7;
+  --card-hover-bg: #f0f5eb;
 
   /* Shadows */
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
 
-  /* Accent colors */
-  --accent-blue: #3b82f6;
-  --accent-blue-hover: #2563eb;
-  --accent-blue-light: #dbeafe;
+  /* Accent */
+  --accent-blue: #1a73e8;
+  --accent-purple: #7c3aed;
+  --accent-red: #dc2626;
+  --accent-orange: #ea580c;
 
-  --accent-green: #10b981;
-  --accent-green-hover: #059669;
-  --accent-green-light: #d1fae5;
-
-  --accent-orange: #f59e0b;
-  --accent-orange-hover: #d97706;
-  --accent-orange-light: #fed7aa;
-
-  --accent-purple: #8b5cf6;
-  --accent-purple-hover: #7c3aed;
-  --accent-purple-light: #e9d5ff;
-
-  --accent-indigo: #6366f1;
-  --accent-indigo-light: #e0e7ff;
-
-  --accent-red: #ef4444;
-  --accent-red-light: #fee2e2;
-
-  --accent-emerald: #10b981;
-  --accent-emerald-light: #a7f3d0;
-
-  /* Card backgrounds for light theme */
-  --card-bg: #ffffff;
-  --card-secondary-bg: #f3f4f6;
-
-  /* Borders */
-  --border-color: #e5e7eb;
-  --border-light: #d1d5db;
-
-  /* Status colors */
-  --status-success-bg: rgba(16, 185, 129, 0.1);
-  --status-success-text: #10b981;
-  --status-inactive-bg: rgba(107, 114, 128, 0.1);
-  --status-inactive-text: #9ca3af;
-
-  /* Hover states */
-  --card-hover-bg: #f9fafb;
-  --danger-hover: #dc2626;
-  --danger-hover-light: rgba(239, 68, 68, 0.2);
-
-  /* Form elements */
+  /* Forms */
   --input-bg: #ffffff;
-  --input-text: #1e293b;
-  --input-border: #d1d5db;
-  --input-focus-ring: var(--accent-blue);
+  --input-border: #dce6d5;
+  --input-text: var(--text-primary);
+  --input-focus-ring: var(--primary-color);
 
   /* Buttons */
-  --btn-primary-bg: var(--accent-blue);
-  --btn-primary-hover: var(--accent-blue-hover);
+  --btn-primary-bg: var(--primary-color);
+  --btn-primary-hover: var(--primary-hover);
   --btn-primary-text: #ffffff;
 
-  --btn-secondary-bg: #f3f4f6;
-  --btn-secondary-hover: #e5e7eb;
-  --btn-secondary-text: #1e293b;
-  --btn-secondary-border: #d1d5db;
+  --btn-secondary-bg: #f0f0f0;
+  --btn-secondary-hover: #e0e0e0;
+  --btn-secondary-text: var(--text-primary);
+  --btn-secondary-border: #d0d0d0;
 
-  --btn-success-bg: var(--accent-green);
-  --btn-success-hover: var(--accent-green-hover);
+  --btn-success-bg: var(--success-color);
+  --btn-success-hover: #2e7d32;
   --btn-success-text: #ffffff;
 
-  --btn-warning-bg: var(--accent-orange);
-  --btn-warning-hover: var(--accent-orange-hover);
+  --btn-warning-bg: var(--warning-color);
+  --btn-warning-hover: #f57c00;
   --btn-warning-text: #ffffff;
 
-  --btn-danger-bg: var(--accent-red);
-  --btn-danger-hover: var(--danger-hover);
+  --btn-danger-bg: var(--danger-color);
+  --btn-danger-hover: #c62828;
   --btn-danger-text: #ffffff;
 
-  --btn-purple-bg: var(--accent-purple);
-  --btn-purple-hover: var(--accent-purple-hover);
+  --btn-purple-bg: #8b5cf6;
+  --btn-purple-hover: #7c3aed;
   --btn-purple-text: #ffffff;
 
-  --btn-emerald-bg: var(--accent-emerald);
-  --btn-emerald-hover: var(--accent-green-hover);
+  --btn-emerald-bg: #10b981;
+  --btn-emerald-hover: #059669;
   --btn-emerald-text: #ffffff;
 
-  /* ✅ Size variables */
-  --size-xs: 0.25rem; /* 4px */
-  --size-sm: 0.5rem; /* 8px */
-  --size-md: 0.75rem; /* 12px */
-  --size-base: 1rem; /* 16px */
-  --size-lg: 1.25rem; /* 20px */
-  --size-xl: 1.5rem; /* 24px */
-  --size-2xl: 2rem; /* 32px */
+  /* Pagination */
+  --pagination-bg: #ffffff;
+  --pagination-text: var(--text-primary);
+  --pagination-border: var(--border-color);
+  --pagination-bg-hover: var(--card-hover-bg);
+  --pagination-active-bg: var(--primary-color);
+  --pagination-active-text: #ffffff;
+  --pagination-disabled-bg: #f5f5f5;
+  --pagination-disabled-text: #bdbdbd;
+  --pagination-disabled-border: #e0e0e0;
 
-  /* ✅ Text size variables */
-  --text-xs: 0.75rem; /* 12px */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.125rem; /* 18px */
-  --text-xl: 1.25rem; /* 20px */
-  --text-2xl: 1.5rem; /* 24px */
-  --text-3xl: 1.875rem; /* 30px */
-  --text-4xl: 2.25rem; /* 36px */
+  /* Status badges */
+  --status-success-bg: rgba(67, 160, 71, 0.1);
+  --status-success-text: #2e7d32;
+  --status-inactive-bg: rgba(100, 100, 100, 0.1);
+  --status-inactive-text: #757575;
 
-  /* ✅ Icon size variables */
+  /* Scrollbar */
+  --scrollbar-track: rgba(0, 0, 0, 0.06);
+  --scrollbar-thumb: var(--primary-color);
+  --scrollbar-thumb-hover: var(--primary-hover);
+
+  /* Sizing */
+  --size-xs: 0.25rem;
+  --size-sm: 0.5rem;
+  --size-md: 0.75rem;
+  --size-base: 1rem;
+  --size-lg: 1.25rem;
+  --size-xl: 1.5rem;
+  --size-2xl: 2rem;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+
   --icon-xs: 1rem;
   --icon-sm: 1.25rem;
   --icon-md: 1.5rem;
   --icon-lg: 2rem;
   --icon-xl: 2.5rem;
 
-  /* ✅ Border radius variables */
   --radius-sm: 0.125rem;
   --radius-md: 0.25rem;
   --radius-lg: 0.5rem;
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
 
-  /* ✅ Shadow variables */
-  --shadow-md:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-
-  /* ✅ Button padding & font */
   --btn-padding-xs: 0.25rem 0.5rem;
   --btn-padding-sm: 0.5rem 1rem;
   --btn-padding-md: 0.75rem 1.5rem;
@@ -155,57 +149,35 @@
 }
 
 body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--background-color);
   color: var(--sidebar-text);
   line-height: 1.5;
 }
 
-/* Custom scrollbar */
-/* ======================================================== */
-
-/* Enhanced Custom Scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
 }
-
 ::-webkit-scrollbar-track {
-  background: linear-gradient(
-    135deg,
-    var(--card-secondary-bg) 0%,
-    var(--card-bg) 100%
-  );
-  border-radius: var(--radius-lg);
-  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+  background: var(--scrollbar-track);
+  border-radius: var(--radius-md);
 }
-
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    135deg,
-    var(--accent-green-dark) 0%,
-    var(--accent-green-hover) 100%
-  );
-  border-radius: var(--radius-lg);
-  border: 2px solid var(--card-bg);
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.1),
-    inset 0 1px 1px rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-md);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    135deg,
-    var(--accent-green-hover) 0%,
-    var(--accent-purple) 100%
-  );
-  transform: scale(1.05);
-  box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.15),
-    inset 0 1px 2px rgba(255, 255, 255, 0.3);
-}
+/* ─── Utility Classes (keep all from existing) ─── */
+/* text-*, p-*, gap-*, rounded-*, icon-*, compact-*, btn-* */
 
 ::-webkit-scrollbar-thumb:active {
   background: linear-gradient(

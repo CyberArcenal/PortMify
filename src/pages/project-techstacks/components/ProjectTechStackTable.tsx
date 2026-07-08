@@ -30,124 +30,106 @@ const ProjectTechStackTable: React.FC<ProjectTechStackTableProps> = ({
   const getSortIcon = (key: string) => {
     if (sortConfig.key !== key) return null;
     return sortConfig.direction === "asc" ? (
-      <ChevronUp className="icon-sm" />
+      <ChevronUp className="w-3 h-3" />
     ) : (
-      <ChevronDown className="icon-sm" />
+      <ChevronDown className="w-3 h-3" />
     );
   };
 
+  const getCategoryColor = (category: string) => {
+    const colors: Record<string, string> = {
+      frontend: "bg-[var(--accent-blue-light)] text-[var(--accent-blue)]",
+      backend: "bg-[var(--accent-green-light)] text-[var(--accent-green)]",
+      database: "bg-[var(--accent-purple-light)] text-[var(--accent-purple)]",
+      devops: "bg-[var(--accent-orange-light)] text-[var(--accent-orange)]",
+      other: "bg-[var(--status-inactive-bg)] text-[var(--status-inactive-text)]",
+    };
+    return colors[category] || colors.other;
+  };
+
+  if (items.length === 0) {
+    return (
+      <div className="text-center py-8 text-[var(--text-secondary)]">
+        No tech stack items found for this project.
+      </div>
+    );
+  }
+
   return (
-    <div
-      className="overflow-x-auto rounded-md border compact-table"
-      style={{ borderColor: "var(--border-color)" }}
-    >
-      <table
-        className="min-w-full"
-        style={{ borderColor: "var(--border-color)" }}
-      >
-        <thead style={{ backgroundColor: "var(--card-secondary-bg)" }}>
+    <div className="overflow-x-auto rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)]">
+      <table className="w-full text-sm">
+        <thead className="bg-[var(--card-secondary-bg)] border-b border-[var(--border-color)]">
           <tr>
-            <th
-              scope="col"
-              className="w-10 px-2 py-2 text-left text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="py-3 px-4 w-8">
               <input
                 type="checkbox"
-                checked={
-                  items?.length > 0 &&
-                  selectedItems?.length === items?.length
-                }
+                checked={items.length > 0 && selectedItems.length === items.length}
                 onChange={onToggleSelectAll}
-                className="h-3 w-3 rounded border-gray-300"
-                style={{ color: "var(--accent-blue)" }}
+                className="rounded border-[var(--border-color)] cursor-pointer"
               />
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)]"
               onClick={() => onSort("name")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Name</span>
-                {getSortIcon("name")}
+              <div className="flex items-center gap-1">
+                Name {getSortIcon("name")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden md:table-cell"
               onClick={() => onSort("category")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Category</span>
-                {getSortIcon("category")}
+              <div className="flex items-center gap-1">
+                Category {getSortIcon("category")}
               </div>
             </th>
             <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors"
+              className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] cursor-pointer hover:text-[var(--primary-color)] hidden sm:table-cell"
               onClick={() => onSort("order")}
             >
-              <div className="flex items-center gap-xs">
-                <span>Order</span>
-                {getSortIcon("order")}
+              <div className="flex items-center gap-1">
+                Order {getSortIcon("order")}
               </div>
             </th>
-            <th
-              scope="col"
-              className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider"
-            >
-              <div className="flex items-center gap-xs">
-                <span>Icon</span>
-              </div>
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)] hidden lg:table-cell">
+              Icon
             </th>
-            <th
-              scope="col"
-              className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <th className="text-left py-3 px-4 font-semibold text-[var(--text-secondary)]">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody style={{ backgroundColor: "var(--card-bg)" }}>
-          {items?.map((item) => (
+        <tbody>
+          {items.map((item) => (
             <tr
               key={item.id}
+              className="border-b border-[var(--border-color)] hover:bg-[var(--card-hover-bg)] transition-colors cursor-pointer"
               onClick={() => onView(item)}
-              className={`hover:bg-[var(--card-secondary-bg)] transition-colors cursor-pointer ${
-                selectedItems?.includes(item.id)
-                  ? "bg-[var(--accent-blue-dark)]"
-                  : ""
-              }`}
-              style={{ borderBottom: "1px solid var(--border-color)" }}
             >
-              <td className="px-2 py-2 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
-                  checked={selectedItems?.includes(item.id)}
+                  checked={selectedItems.includes(item.id)}
                   onChange={() => onToggleSelect(item.id)}
-                  className="h-3 w-3 rounded border-gray-300"
-                  style={{ color: "var(--accent-blue)" }}
+                  className="rounded border-[var(--border-color)] cursor-pointer"
                 />
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm font-medium" style={{ color: "var(--sidebar-text)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-primary)] font-medium">
                 {item.name}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
-                {item.category}
+              <td className="py-2.5 px-4 hidden md:table-cell">
+                <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(item.category)}`}>
+                  {item.category}
+                </span>
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs hidden sm:table-cell">
                 {item.order}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm" style={{ color: "var(--text-secondary)" }}>
-                {item.icon ? (
-                  <span className="font-mono text-xs">{item.icon}</span>
-                ) : (
-                  <Cpu className="w-4 h-4" />
-                )}
+              <td className="py-2.5 px-4 text-[var(--text-secondary)] text-xs font-mono hidden lg:table-cell">
+                {item.icon || <Cpu className="w-4 h-4" />}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+              <td className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                 <ProjectTechStackActionsDropdown
                   item={item}
                   onView={onView}

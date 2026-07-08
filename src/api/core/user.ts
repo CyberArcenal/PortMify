@@ -124,6 +124,34 @@ class UserAPI {
       throw new Error(error.response?.data?.detail || 'Failed to delete user');
     }
   }
+
+    /**
+   * Change password for a user.
+   * If userId is not provided, changes the current user's password.
+   * If userId is provided (admin only), changes password for that user.
+   */
+  async changePassword(
+    userId?: number,
+    data?: { current_password?: string; new_password: string }
+  ): Promise<{ message: string }> {
+    try {
+      const url = userId
+        ? `${this.basePath}${userId}/change-password/`
+        : `${this.basePath}change-password/`;
+      
+      const response = await apiClient.post<{
+        status: boolean;
+        message: string;
+        result: { message: string };
+      }>(url, data);
+      
+      return response.data.result;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.detail || "Failed to change password"
+      );
+    }
+  }
 }
 
 const userAPI = new UserAPI();

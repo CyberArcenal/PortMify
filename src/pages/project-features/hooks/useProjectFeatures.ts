@@ -17,22 +17,18 @@ export interface PaginationType {
 
 interface UseProjectFeaturesReturn {
   features: ProjectFeatureWithDetails[];
-  paginatedFeatures: ProjectFeatureWithDetails[];
   filters: ProjectFeatureFilters;
-  setFilters: React.Dispatch<React.SetStateAction<ProjectFeatureFilters>>;
   loading: boolean;
   error: string | null;
   pagination: PaginationType;
   selectedFeatures: number[];
   setSelectedFeatures: React.Dispatch<React.SetStateAction<number[]>>;
   sortConfig: { key: string; direction: "asc" | "desc" };
-  setSortConfig: React.Dispatch<
-    React.SetStateAction<{ key: string; direction: "asc" | "desc" }>
-  >;
   pageSize: number;
   setPageSize: (size: number) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+  totalCount: number;
   reload: () => void;
   handleFilterChange: (key: keyof ProjectFeatureFilters, value: string) => void;
   resetFilters: () => void;
@@ -49,6 +45,7 @@ const useProjectFeatures = (
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedFeatures, setSelectedFeatures] = useState<number[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
@@ -58,7 +55,6 @@ const useProjectFeatures = (
   });
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
 
   const [filters, setFilters] = useState<ProjectFeatureFilters>({
     search: "",
@@ -78,6 +74,7 @@ const useProjectFeatures = (
     if (!projectId) {
       setFeatures([]);
       setTotalCount(0);
+      setLoading(false);
       return;
     }
 
@@ -90,7 +87,6 @@ const useProjectFeatures = (
         page: currentPage,
         page_size: pageSize,
       };
-      // API might not support sorting/ordering; adjust as needed
 
       const response = await projectFeatureAPI.list(params);
       if (mountedRef.current) {
@@ -123,13 +119,13 @@ const useProjectFeatures = (
     page_size: pageSize,
   };
 
-  // Local filtering (since API might not support search)
+  // Local filtering
   const filteredFeatures = features.filter((f) => {
     if (!filters.search) return true;
     return f.description.toLowerCase().includes(filters.search.toLowerCase());
   });
 
-  // Sorting (local)
+  // Local sorting
   const sortedFeatures = [...filteredFeatures].sort((a, b) => {
     const key = sortConfig.key;
     if (key === "order") {
@@ -150,7 +146,7 @@ const useProjectFeatures = (
       setFilters((prev) => ({ ...prev, [key]: value }));
       setCurrentPage(1);
     },
-    [],
+    []
   );
 
   const resetFilters = useCallback(() => {
@@ -162,13 +158,13 @@ const useProjectFeatures = (
 
   const toggleFeatureSelection = useCallback((id: number) => {
     setSelectedFeatures((prev) =>
-      prev.includes(id) ? prev.filter((fid) => fid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((fid) => fid !== id) : [...prev, id]
     );
   }, []);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedFeatures((prev) =>
-      prev.length === sortedFeatures.length ? [] : sortedFeatures.map((f) => f.id),
+      prev.length === sortedFeatures.length ? [] : sortedFeatures.map((f) => f.id)
     );
   }, [sortedFeatures]);
 
@@ -191,20 +187,18 @@ const useProjectFeatures = (
 
   return {
     features: sortedFeatures,
-    paginatedFeatures: sortedFeatures,
     filters,
-    setFilters,
     loading,
     error,
     pagination,
     selectedFeatures,
     setSelectedFeatures,
     sortConfig,
-    setSortConfig,
     pageSize,
     setPageSize: setPageSizeHandler,
     currentPage,
     setCurrentPage,
+    totalCount,
     reload,
     handleFilterChange,
     resetFilters,
