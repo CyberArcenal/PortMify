@@ -185,13 +185,6 @@ const TopBarRight: React.FC<TopBarRightProps> = ({ onRefresh }) => {
                   <User className="w-4 h-4 text-[var(--text-secondary)]" />
                   <span>My Profile</span>
                 </button>
-                <button
-                  onClick={() => { navigate("/settings"); setShowProfileMenu(false); }}
-                  className="w-full text-left px-4 py-2.5 text-sm text-[var(--text-primary)] hover:bg-[var(--card-hover-bg)] flex items-center gap-3 transition-colors"
-                >
-                  <Settings className="w-4 h-4 text-[var(--text-secondary)]" />
-                  <span>Settings</span>
-                </button>
                 <hr className="border-[var(--border-color)] mx-3" />
                 <button
                   onClick={() => {
